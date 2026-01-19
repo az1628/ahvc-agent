@@ -4,262 +4,129 @@ from datetime import datetime
 
 # === PAGE CONFIGURATION ===
 st.set_page_config(
-    page_title="HVAC Sentinel | Dark Mode",
-    page_icon="🛡️",
+    page_title="HVAC Docu-Fix Pro",
+    page_icon="📋",
     layout="centered",
     initial_sidebar_state="collapsed"
 )
 
-# === DARK MODE CSS (VISIBILITY FIX) ===
+# === DARK MODE CSS ===
 st.markdown("""
 <style>
-    /* 1. Main Background - Dark Slate */
-    .stApp {
-        background-color: #0e1117;
-        color: #ffffff;
-    }
-    
-    /* 2. Text Visibility Fixes */
-    p, h1, h2, h3, li, span, div {
-        color: #e0e0e0 !important;
-    }
-    
-    /* 3. Header - Deep Navy */
+    .stApp { background-color: #0f172a; color: #f8fafc; }
+    p, h1, h2, h3, li, span, label { color: #f8fafc !important; }
     .app-header {
-        background-color: #1a1c24;
-        padding: 20px;
-        margin: -60px -60px 20px -60px;
-        border-bottom: 2px solid #4a90e2;
+        background-color: #1e293b;
+        padding: 25px;
+        margin: -65px -65px 25px -65px;
+        border-bottom: 3px solid #3b82f6;
         text-align: center;
     }
-    .header-title {
-        font-size: 24px;
-        font-weight: 800;
-        color: #ffffff !important;
-        letter-spacing: 1px;
-        margin: 0;
+    .header-title { font-size: 26px; font-weight: 800; color: #ffffff !important; margin: 0; }
+    .header-sub { font-size: 13px; color: #94a3b8 !important; margin-top: 5px; text-transform: uppercase; }
+    .module-card {
+        background-color: #1e293b;
+        border: 1px solid #334155;
+        padding: 22px;
+        border-radius: 12px;
+        margin-bottom: 20px;
     }
-    .header-sub {
-        font-size: 12px;
-        color: #4a90e2 !important;
-        margin-top: 5px;
+    .stSelectbox div[data-baseweb="select"] div, .stTextInput input, .stTextArea textarea {
+        background-color: #0f172a !important;
+        color: #f8fafc !important;
+        border: 1px solid #475569 !important;
     }
-
-    /* 4. Cards/Boxes - Lighter Dark Grey */
-    .info-card {
-        background-color: #262730;
-        border: 1px solid #363945;
-        padding: 20px;
-        border-radius: 10px;
-        margin-bottom: 15px;
-    }
-    
-    /* 5. Inputs & Dropdowns (Dark Backgrounds) */
-    .stTextInput input, .stSelectbox div[data-baseweb="select"] div {
-        background-color: #1a1c24 !important;
-        color: white !important;
-        border: 1px solid #4a4a4a;
-    }
-    .stSelectbox label, .stTextInput label, .stTextArea label {
-        color: #4a90e2 !important;
-        font-weight: bold;
-    }
-
-    /* 6. Buttons - Neon Blue Accent */
     .stButton > button {
         width: 100%;
-        background-color: #4a90e2;
+        background-color: #2563eb;
         color: white !important;
-        font-weight: bold;
-        border: none;
-        border-radius: 6px;
-        height: 50px;
+        font-weight: 700;
+        border-radius: 8px;
+        height: 52px;
     }
-    .stButton > button:hover {
-        background-color: #357abd;
-    }
-
-    /* 7. Results Box */
     .result-box {
-        background-color: #1c2e4a; /* Navy Tint */
-        border-left: 5px solid #4a90e2;
-        padding: 20px;
+        background-color: #0f172a;
+        border-left: 6px solid #3b82f6;
+        padding: 25px;
         border-radius: 8px;
         margin-top: 20px;
     }
-    
-    /* 8. Safety Badges */
-    .badge-safe {
-        background-color: #1b5e20;
-        color: #a5d6a7 !important;
-        padding: 8px;
-        border-radius: 4px;
-        text-align: center;
-        font-weight: bold;
-        border: 1px solid #2e7d32;
-    }
-
-    /* Hide Streamlit Junk */
-    #MainMenu {visibility: hidden;}
-    footer {visibility: hidden;}
-    header {visibility: hidden;}
+    #MainMenu {visibility: hidden;} footer {visibility: hidden;} header {visibility: hidden;}
 </style>
 """, unsafe_allow_html=True)
 
 # === DATA ENGINE ===
 HVAC_DATABASE = {
     "Vaillant": {
-        "aroTHERM Plus (R290)": {
-            "specs": "7-15kW Monobloc Heat Pump.",
-            "faults": "F.022: Low pressure. F.729: Compressor cold start. F.718: Fan blocked.",
-            "safety": "R290 FLAMMABLE Refrigerant. 1m Safety Zone Mandatory."
-        },
-        "ecoTEC plus": {
-            "specs": "Gas Combi Boiler.",
-            "faults": "F.28: Ignition Failure. F.75: Pump/Pressure Sensor. F.22: Dry Fire.",
-            "safety": "Gas Safe Regs apply. CO check required."
-        }
+        "aroTHERM Plus (R290)": {"faults": "F.022: Low Water. F.718: Fan. F.729: Low Temp."},
+        "ecoTEC plus/pro": {"faults": "F.28: Ignition. F.75: Pressure. F.22: Dry Fire."}
     },
     "Mitsubishi Electric": {
-        "Ecodan R290": {
-            "specs": "Air Source Heat Pump.",
-            "faults": "U1: High Pressure. L9: Flow Rate Low. P6: Overheat.",
-            "safety": "High Voltage & Flammable Gas Risk."
-        }
+        "Ecodan": {"faults": "U1: High Pressure. L9: Flow Rate. P6: Overheat."}
     },
-    "Daikin": {
-        "Altherma 3 H HT": {
-            "specs": "High Temp Heat Pump.",
-            "faults": "A5: HP Control. E7: Fan Motor. U0: Low Gas.",
-            "safety": "R32 Mildly Flammable. F-Gas Cat 1 required."
-        }
-    },
-    "Commercial Fridge": {
-        "Williams Multideck": {
-            "specs": "Commercial Display Fridge.",
-            "faults": "HI: High Temp. CL: Clean Condenser. E1: Probe Fail.",
-            "safety": "Food Safety Danger Zone >8°C."
-        }
+    "Worcester Bosch": {
+        "Greenstar 4000": {"faults": "EA: No Flame. E9: Overheat. C6: Fan."}
     }
 }
 
 def main():
-    # --- DARK HEADER ---
-    st.markdown("""
-        <div class="app-header">
-            <div class="header-title">HVAC SENTINEL</div>
-            <div class="header-sub">PRO AUDIT | DARK MODE</div>
-        </div>
-    """, unsafe_allow_html=True)
+    st.markdown('<div class="app-header"><div class="header-title">HVAC DOCU-FIX PRO</div><div class="header-sub">Technical Reference & Audit Guide</div></div>', unsafe_allow_html=True)
 
-    # --- 1. LOGIN ---
-    if "verified" not in st.session_state:
-        st.session_state.verified = False
-
-    if not st.session_state.verified:
-        st.markdown('<div class="info-card">', unsafe_allow_html=True)
-        st.subheader("🔐 Engineer Login")
-        key = st.text_input("License Key", type="password")
-        st.caption("Try Key: `PRO2026`")
-        if st.button("Unlock System"):
-            if key == "PRO2026":
-                st.session_state.verified = True
+    # Auth
+    if "auth" not in st.session_state: st.session_state.auth = False
+    if not st.session_state.auth:
+        st.markdown('<div class="module-card">', unsafe_allow_html=True)
+        key = st.text_input("Site License Key", type="password")
+        if st.button("Unlock Documentation"):
+            if key == "TECH2026":
+                st.session_state.auth = True
                 st.rerun()
-            else:
-                st.error("Invalid Key")
+            else: st.error("Invalid Key")
         st.markdown('</div>', unsafe_allow_html=True)
         return
 
-    # --- 2. SAFETY CHECK ---
-    st.markdown('<div class="info-card">', unsafe_allow_html=True)
-    st.subheader("🛡️ Safety Interlock")
-    c1, c2, c3 = st.columns(3)
-    with c1: ppe = st.checkbox("PPE OK")
-    with c2: loto = st.checkbox("LOTO OK")
-    with c3: risk = st.checkbox("Risk Check")
-
-    if not (ppe and loto and risk):
-        st.warning("⚠️ Complete checks to enable tool")
-        st.stop()
-    else:
-        st.markdown('<div class="badge-safe">SITE SECURE - ACTIVE</div>', unsafe_allow_html=True)
-    st.markdown('</div>', unsafe_allow_html=True)
-
-    # --- 3. DIAGNOSTIC TOOL ---
-    st.markdown('<div class="info-card">', unsafe_allow_html=True)
-    st.subheader("📍 Fault Diagnosis")
-
-    # Dynamic Dropdowns
-    col_brand, col_model = st.columns(2)
-    with col_brand:
-        brand_list = ["Select Brand..."] + sorted(list(HVAC_DATABASE.keys()))
-        brand = st.selectbox("Manufacturer", brand_list)
+    # Equipment Selection
+    st.markdown('<div class="module-card">', unsafe_allow_html=True)
+    c_brand, c_model = st.columns(2)
+    with c_brand:
+        brand = st.selectbox("Manufacturer", ["Select Brand..."] + sorted(list(HVAC_DATABASE.keys())))
     
     selected_unit = ""
-    context = {}
+    if brand != "Select Brand...":
+        with c_model:
+            model = st.selectbox("Model Series", sorted(list(HVAC_DATABASE[brand].keys())))
+            selected_unit = f"{brand} {model}"
     
-    with col_model:
-        if brand != "Select Brand...":
-            model_list = sorted(list(HVAC_DATABASE[brand].keys()))
-            model = st.selectbox("Model", model_list)
-            if model:
-                selected_unit = f"{brand} {model}"
-                context = HVAC_DATABASE[brand][model]
-        else:
-            st.selectbox("Model", ["Select Brand First"], disabled=True)
-            
-    # Manual Entry Fallback
-    if brand == "Select Brand...":
-        st.markdown("---")
-        manual_unit = st.text_input("Or Enter Custom Unit Name")
-        if manual_unit:
-            selected_unit = f"Custom: {manual_unit}"
-            context = {"faults": "Standard Engineering Principles"}
-
-    # Fault Input
-    st.markdown("---")
-    fault = st.text_area("Fault / Error Code", placeholder="e.g. F.22, Low Pressure, Leaking...")
+    fault_desc = st.text_area("Fault Description / Error Codes")
     
-    if st.button("🚀 ANALYZE & GENERATE SOP"):
-        if not selected_unit or not fault:
-            st.error("Missing Unit or Fault info")
+    if st.button("🚀 GET TECHNICAL GUIDANCE"):
+        if not selected_unit or not fault_desc:
+            st.error("Please select a unit and describe the fault.")
         else:
-            if not st.secrets.get("ANTHROPIC_API_KEY"):
-                st.error("API Key Missing")
+            api_key = st.secrets.get("ANTHROPIC_API_KEY")
+            if not api_key:
+                st.error("API Key missing in Secrets.")
                 return
-                
-            client = anthropic.Anthropic(api_key=st.secrets["ANTHROPIC_API_KEY"])
             
-            with st.spinner("AI analyzing technical manuals..."):
-                prompt = f"""
-                Role: Senior UK HVAC Tech.
-                Unit: {selected_unit}
-                Data: {context}
-                Fault: {fault}
-                
-                Provide a short, professional field guide.
-                Structure:
-                1. DIAGNOSIS (What is wrong)
-                2. STEP-BY-STEP REPAIR (5 steps max)
-                3. PARTS REQUIRED
-                4. SAFETY WARNING
-                """
-                
-                response = client.messages.create(
-                    model="claude-3-5-sonnet-20240620",
-                    max_tokens=600,
-                    messages=[{"role": "user", "content": prompt}]
-                )
-                
-                st.markdown('<div class="result-box">', unsafe_allow_html=True)
-                st.subheader("📋 Solution Found")
-                st.markdown(response.content[0].text)
-                st.markdown("---")
-                
-                # Audit Log Button
-                log_content = f"AUDIT LOG\nUnit: {selected_unit}\nFault: {fault}\nSolution: {response.content[0].text}"
-                st.download_button("💾 Save Audit Log", log_content, file_name="Audit_Log.txt")
-                st.markdown('</div>', unsafe_allow_html=True)
+            client = anthropic.Anthropic(api_key=api_key)
+            
+            with st.spinner("Analyzing Manufacturer Data..."):
+                try:
+                    # UPDATED MODEL STRING AND ERROR HANDLING
+                    response = client.messages.create(
+                        model="claude-3-5-sonnet-latest", # Changed to 'latest' alias
+                        max_tokens=800,
+                        messages=[{"role": "user", "content": f"Expert HVAC Engineer advice for {selected_unit}. Fault: {fault_desc}"}]
+                    )
+                    
+                    st.markdown('<div class="result-box">', unsafe_allow_html=True)
+                    st.markdown(response.content[0].text)
+                    st.markdown('</div>', unsafe_allow_html=True)
+                    
+                except anthropic.NotFoundError:
+                    st.error("Model Error: The system could not find the specified AI model. Try using 'claude-3-sonnet-20240229'.")
+                except Exception as e:
+                    st.error(f"An unexpected error occurred: {str(e)}")
     
     st.markdown('</div>', unsafe_allow_html=True)
 
