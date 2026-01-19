@@ -10,7 +10,7 @@ from reportlab.lib.enums import TA_CENTER
 import httpx
 
 # Page Config
-st.set_page_config(page_title="HVAC Documentation Tool", page_icon="🔧", layout="centered")
+st.set_page_config(page_title="HVAC Field-Spec Pro", page_icon="🔧", layout="centered")
 
 # Dark Mode CSS
 st.markdown("""
