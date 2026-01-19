@@ -1,217 +1,587 @@
 import streamlit as st
 import anthropic
 from datetime import datetime
+import json
 
-# --- 1. CORPORATE MOBILE CONFIG ---
-st.set_page_config(page_title="HVAC Sentinel Mobile", page_icon="📱", layout="centered")
+# === PAGE CONFIG ===
+st.set_page_config(
+    page_title="HVAC Doc Pro | Technical Reference",
+    page_icon="🔧",
+    layout="centered",
+    initial_sidebar_state="collapsed"
+)
 
-# MOBILE-FIRST CSS
+# === PROFESSIONAL UI STYLING ===
 st.markdown("""
-    <style>
-    /* Global Clean Look */
-    .stApp { background-color: #f0f2f6; }
-    
-    /* Corporate Header */
-    .mobile-header {
-        background-color: #003366;
-        padding: 20px;
-        border-radius: 0px 0px 15px 15px;
-        color: white;
-        text-align: center;
-        margin-top: -50px; /* Pulls it to the top */
-        margin-bottom: 20px;
-        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+<style>
+    /* Clean Professional Theme */
+    .stApp { 
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     }
     
-    /* Full Width 'Thumb-Friendly' Buttons */
+    /* Main Container */
+    .main-container {
+        background: white;
+        border-radius: 20px;
+        padding: 30px;
+        margin: 20px auto;
+        max-width: 800px;
+        box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+    }
+    
+    /* Header Branding */
+    .app-header {
+        text-align: center;
+        padding: 20px 0;
+        border-bottom: 3px solid #667eea;
+        margin-bottom: 30px;
+    }
+    .app-title {
+        font-size: 32px;
+        font-weight: 800;
+        color: #2d3748;
+        margin: 0;
+    }
+    .app-subtitle {
+        font-size: 14px;
+        color: #718096;
+        margin-top: 5px;
+    }
+    
+    /* Premium Buttons */
     .stButton>button {
         width: 100%;
-        border-radius: 8px;
-        height: 3.5em;
-        background-color: #003366; 
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         color: white;
-        font-weight: 600;
         border: none;
+        border-radius: 10px;
+        padding: 15px 30px;
+        font-weight: 600;
+        font-size: 16px;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
     }
-    .stButton>button:active { background-color: #002244; }
+    .stButton>button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+    }
     
-    /* Cards */
-    .app-card {
-        background: white;
-        padding: 20px;
-        border-radius: 12px;
-        box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-        margin-bottom: 15px;
-        border: 1px solid #e0e0e0;
+    /* Info Cards */
+    .info-card {
+        background: #f7fafc;
+        border-left: 4px solid #667eea;
+        padding: 15px;
+        border-radius: 8px;
+        margin: 15px 0;
     }
     
     /* Status Badges */
-    .badge-safe { background-color: #e8f5e9; color: #2e7d32; padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: bold; }
-    .badge-warn { background-color: #fff3e0; color: #ef6c00; padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: bold; }
+    .badge {
+        display: inline-block;
+        padding: 6px 12px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 700;
+        margin: 5px;
+    }
+    .badge-success { background: #c6f6d5; color: #22543d; }
+    .badge-warning { background: #feebc8; color: #7c2d12; }
+    .badge-info { background: #bee3f8; color: #2c5282; }
     
-    </style>
-    """, unsafe_allow_html=True)
+    /* Legal Disclaimer Box */
+    .legal-box {
+        background: #fff5f5;
+        border: 2px solid #fc8181;
+        border-radius: 10px;
+        padding: 20px;
+        margin: 20px 0;
+        font-size: 12px;
+        color: #742a2a;
+    }
+    
+    /* Results Container */
+    .result-box {
+        background: #edf2f7;
+        border-radius: 12px;
+        padding: 25px;
+        margin: 20px 0;
+        border: 2px solid #667eea;
+    }
+    
+    /* Hide Streamlit Branding */
+    #MainMenu {visibility: hidden;}
+    footer {visibility: hidden;}
+    
+</style>
+""", unsafe_allow_html=True)
 
-# --- 2. THE MASTER DATA (Same Robust Data) ---
-KNOWLEDGE_BASE = {
+# === EXPANDED UK HVAC KNOWLEDGE BASE ===
+HVAC_DATABASE = {
     "Vaillant": {
-        "aroTHERM Plus (R290)": "F.022: Low water (<0.6 bar). F.718: Fan blocked. F.729: Compressor outlet <0C. R290 SAFETY: Flammable. 1m Boundary.",
-        "ecoTEC plus": "F.22: Dry fire. F.28: Ignition fail. F.75: Pump sensor fault. F.29: Flame loss.",
-        "flexoTHERM": "701: Brine flow error. 702: Ground source sensor fault."
-    },
-    "Mitsubishi Electric": {
-        "Ecodan R290": "U1: High pressure/flow. L9: Flow rate drop. P6: Overheat. F3: LP switch failure.",
-        "City Multi VRF": "4115: Discharge temp. 1500: Ref overcharge. 1102: Discharge temp thermistor."
+        "aroTHERM Plus (R290)": {
+            "faults": "F.022: Low pressure (<0.6 bar) - Check PRV/auto-air-vent. F.718: Fan blocked/thermistor fault. F.729: Compressor discharge <0°C - refrigerant issue. F.724: Brine flow error.",
+            "safety": "R290 FLAMMABLE. 1m exclusion zone. No naked flames. Leak detector mandatory.",
+            "specs": "7-15kW output. COP 4.5 @ A7/W35. Requires G3 ticket for F-Gas work."
+        },
+        "ecoTEC plus 825/835": {
+            "faults": "F.22: Dry fire protection (low pressure). F.28: Ignition lockout (gas/ignition). F.75: Pump circulation fault. F.29: Flame loss during operation. F.62: Gas valve delay.",
+            "safety": "Gas Safe registered engineer only. Check ventilation. CO detector mandatory.",
+            "specs": "Combi 25-35kW. Min 1.5 bar pressure. Annual service required."
+        },
+        "flexoTHERM exclusive": {
+            "faults": "701: Brine/water flow error. 702: Ground source sensor fault. 704: Evaporator NTC error. F.2016: Low brine temp.",
+            "safety": "Glycol antifreeze toxic. Pressurized system. Isolation required.",
+            "specs": "Ground source 5.6-15.6kW. Requires MCS certification for RHI."
+        }
     },
     "Worcester Bosch": {
-        "Greenstar 4000": "EA: Ignition fault. E9: Overheat. C6: Fan speed. A1: Pump stuck.",
-        "GB162 Commercial": "227: Ignition fail. 216: Fan too slow. 224: Overheat >105C."
+        "Greenstar 4000/8000": {
+            "faults": "EA/224: Ignition fault - check gas/electrodes. E9/227: Overheat >95°C. C6: Fan speed error. A1: Pump blocked. 227: Flame detection. 216: Fan too slow.",
+            "safety": "LPG models require LPGA cert. Ventilation critical. Gas tightness test 1 min hold.",
+            "specs": "18-40kW range. 94% efficiency. 5yr warranty (registered). Complies BS 6798."
+        },
+        "GB162 Commercial": {
+            "faults": "227: Ignition lockout (3 attempts). 216: Fan underspeed. 224: Overheat >105°C. EA: Electrode/gas fault. 260: Flue thermistor.",
+            "safety": "Commercial ticket required. Flue analyser mandatory. CO <200ppm.",
+            "specs": "100-199kW. Cascade up to 1MW. Annual PSSR inspection required."
+        },
+        "Greenstar Highflow CDi": {
+            "faults": "E9: DHW overheat. EA: Ignition fail. A7: Diverter valve stuck. D5: Internal fault. 227: Flame sensor.",
+            "safety": "Unvented cylinder regs apply. G3 ticket required. 3 bar PRV test.",
+            "specs": "440 CDi = 35kW + 110L store. Legionella cycle 60°C weekly."
+        }
+    },
+    "Mitsubishi Electric": {
+        "Ecodan R290 Monobloc": {
+            "faults": "U1: High pressure/Low flow. L9: Abnormal flow rate. P6: Overheat protection. F3: LP switch fail. U4: Transmission error. P1: Voltage imbalance.",
+            "safety": "R290 FLAMMABLE. Spark-free tools only. 1m boundary. Nitrogen purge during brazing.",
+            "specs": "8.5-14kW @ -7°C. Flow temp 60°C max. MCS 020 certified."
+        },
+        "City Multi VRF R32": {
+            "faults": "4115: Discharge temp >115°C. 1500: Refrigerant overcharge. 1102: Discharge thermistor. 6800: Compressor temp. E203: Transmission PCB.",
+            "safety": "R32 mildly flammable (A2L). Room size calculations BS EN 378. F-Gas Cat I.",
+            "specs": "Up to 135kW. Heat recovery. BEMS integration. 50Hz 3-phase."
+        },
+        "Mr Slim PEA Wall Units": {
+            "faults": "E6: Indoor/outdoor comms. E1: Indoor PCB. E3: High pressure switch. E7: Fan motor lock. P8: High temp detection.",
+            "safety": "R32 room volume check mandatory. Leak detection <3kg charge exempt.",
+            "specs": "2.5-7.1kW cooling. SCOP 4.3. WiFi MELCloud ready."
+        }
     },
     "Daikin": {
-        "Altherma 3 H HT": "A5: HP Control. E3: HP Switch. U0: Low Gas. E7: Fan motor lock.",
-        "VAM Units": "A9: EEV fault. C4: Liquid pipe thermistor error."
+        "Altherma 3 H HT": {
+            "faults": "A5: High pressure control PCB. E3: HP switch trip. U0: Low refrigerant. E7: Fan motor lock. U4: Indoor/outdoor comms. AH: Water pump fault.",
+            "safety": "R410A system. Pressure test 42 bar. F-Gas handling certificate required.",
+            "specs": "16-18kW @ -10°C. 70°C flow temp. Buffer tank recommended <radiators."
+        },
+        "VAM Air Handling": {
+            "faults": "A9: EEV fault (expansion valve). C4: Liquid pipe thermistor. L5: Compressor overheat. U2: Voltage drop/phase loss. C9: Suction thermistor.",
+            "safety": "HVAC Zone 1. Lockout/tagout for fan access. Belt guards mandatory.",
+            "specs": "500-10,000 m³/h. FGAS <3kg exempt. Thermal wheel option."
+        }
     },
-    "Baxi / Potterton": {
-        "600/800 Combi": "E119: Low pressure. E133: Gas supply ignition. E110: Overheat.",
-        "Assure Commercial": "E01: No flame. E03: Fan fault."
+    "Baxi": {
+        "800 Combi": {
+            "faults": "E119: Low pressure (<0.5 bar). E133: Gas supply/ignition. E110: Overheat stat. E125: Pump blockage. E117: Water pressure sensor.",
+            "safety": "Ventilation MUST comply with BS 5440. CO alarm within 1m horizontal.",
+            "specs": "24-30kW combi. Min inlet 1.5 bar. Built-in filling loop (keyed)."
+        },
+        "Assure Commercial": {
+            "faults": "E01: No flame detected. E03: Fan fault. E09: Safety stat. E28: Flame loss. E125: Circulation fault.",
+            "safety": "Commercial gas ticket. Flue flow test. Ventilation calc per BS 6644.",
+            "specs": "80-250kW. Cascade control. PSSR annual exam. 95% gross efficiency."
+        },
+        "Duo-tec Combi HE": {
+            "faults": "E160: Fan fault. E125: Pump overrun. E133: Ignition. E110: Overheat. E28: Flame rectification.",
+            "safety": "Magnetic filter mandatory (warranty). System cleanse before install.",
+            "specs": "24-40kW. 7yr heat exchanger warranty. Weather compensation ready."
+        }
     },
     "Ideal": {
-        "Logic / Vogue": "F1: Low Pressure. F2: Flame Loss. L2: Ignition. F3: Fan fault.",
-        "Evomax 2": "L1: No flow. L2: Ignition lockout. FU: Delta-T >50C."
-    },
-    "Samsung": {
-        "EHS Mono HT Quiet": "E911: Low flow. E101: Comms error. E912: Flow switch error."
+        "Logic Max Combi": {
+            "faults": "F1: Low pressure (<0.5 bar). F2: Flame loss. L2: Ignition lockout (6 tries). F3: Fan fault. FD: Flame detection. FL: False flame.",
+            "safety": "25mm copper required on gas. Compression fittings only (no solder near valve).",
+            "specs": "24-35kW. 10yr warranty (registered). ErP A-rated."
+        },
+        "Evomax 2 System": {
+            "faults": "L1: No flow detected. L2: Ignition lockout. FU: Delta-T fault >50°C. F3: Fan underspeed. F9: Gas valve fault.",
+            "safety": "System boiler - unvented regs apply if DHW cylinder. Benchmark checklist.",
+            "specs": "60-150kW. Low NOx Class 6. Weather comp + OpenTherm."
+        }
     },
     "Viessmann": {
-        "Vitodens 100/200": "F2: Burner overheat. F4: No flame. F9: Fan speed low."
+        "Vitodens 100/200": {
+            "faults": "F2: Burner overheat. F4: No flame signal. F9: Fan speed too low. F5: External error. FD: Flame monitoring.",
+            "safety": "Condensate pH <4. Neutralizer required (commercial). Trap prime 0.5L.",
+            "specs": "19-35kW. Lambda Pro Control. ViCare app. 5-10yr warranty."
+        },
+        "Vitocal 250-A": {
+            "faults": "E7: Compressor error. 10: Flow temp sensor. 21: Return temp sensor. 92: HP switch. 0A: Communication fault.",
+            "safety": "R407C refrigerant. Qualified F-Gas engineer. Pressure test 28 bar.",
+            "specs": "11-13kW @ A7/W35. COP 4.6. EHPA approved. MCS certified."
+        }
     },
-    "Commercial Fridge": {
-        "Williams Multideck": "HI: High Temp. CL: Clean Condenser. E1: Air probe fail. E16: HP Alarm.",
-        "Foster EcoShow": "hc: High Condenser. hP: High Pressure. dEF: Defrost active.",
-        "Adande Drawers": "rPF: Probe fail. HA: High temp. do: Door open."
+    "Samsung": {
+        "EHS Mono HT Quiet": {
+            "faults": "E911: Low flow (<12 L/min). E101: Indoor/outdoor comms error. E912: Flow switch stuck. E121: Indoor temp sensor. E441: Discharge temp.",
+            "safety": "R32 refrigerant. Room volume check. 2.5mm² min cable. RCD protection.",
+            "specs": "12-16kW. 65°C flow temp. ErP A+++. 7yr compressor warranty."
+        },
+        "System 5 VRF": {
+            "faults": "E202: Communication. 121: Temp sensor. 441: High discharge. 554: EEV fault. E102: Outdoor PCB.",
+            "safety": "R410A. 3-phase supply. Earth bonding critical. Vibration isolators required.",
+            "specs": "22.4-168kW. HR model heat recovery. BMS Modbus RTU."
+        }
+    },
+    "Grant": {
+        "Aerona³ R32": {
+            "faults": "E02: Flow temp sensor. E03: Return sensor. E08: HP switch. E10: Compressor overheat. E13: Comm error.",
+            "safety": "R32 A2L class. Installation cert required. Outdoor unit 300mm clearance.",
+            "specs": "6-17kW. MCS certified. -20°C operation. Weather comp included."
+        },
+        "Vortex Eco Combi": {
+            "faults": "Lockout: Reset after 1 hour. Nozzle: 0.40-0.75 USGPH. Pump pressure 7-10 bar. Photocell dirty.",
+            "safety": "Oil tank 1.8m min from boiler. Fire valve mandatory. CO alarm KIWA approved.",
+            "specs": "26-36kW. Kerosene C2. 90% efficiency. OFTEC registered installer."
+        }
+    },
+    "Commercial Refrigeration": {
+        "Williams Multideck": {
+            "faults": "HI: High temp alarm. CL: Condenser blocked. E1: Air probe fail. E16: HP alarm. dEF: Defrost cycle. E2: Evaporator probe.",
+            "safety": "R404A/R448A. F-Gas record keeping. Leak test annual. Door seals weekly check.",
+            "specs": "Medium temp +1/+4°C. Night blind. LED lighting. IP20 rating."
+        },
+        "Foster EcoShow": {
+            "faults": "hc: High condenser temp. hP: High pressure trip. dEF: Defrost active. LS: Low superheat. E3: Evap probe error.",
+            "safety": "HFC refrigerant. Ventilation check. Door alarms functional. HACCP compliance.",
+            "specs": "Remote/integral. Glass doors. Anti-sweat heaters. Temp log weekly."
+        },
+        "Adande Drawers": {
+            "faults": "rPF: Probe failure. HA: High temp alarm. do: Door open >2 min. E1: NTC error. LS: Low speed compressor.",
+            "safety": "R290 FLAMMABLE. No ignition sources. Service by Adande only. 1kg charge.",
+            "specs": "-2/+10°C multi-temp. VCR compressor. 680mm depth. 5yr warranty."
+        },
+        "True Refrigeration": {
+            "faults": "AL: Alarm condition. dF: Defrost mode. OP: Door open. Pr: Probe fault. HC: High condenser pressure.",
+            "safety": "R290/R600a models - spark-free area. NSF certified. HACCP digital logs.",
+            "specs": "Prep tables/cabinets. Self-close doors. 33-38°F holding temp."
+        }
+    },
+    "Controls & BMS": {
+        "Honeywell EvoHome": {
+            "faults": "Battery low: Replace AAA x2. Zone not responding: 10m range check. Boiler relay clicking: Load 3A max. Binding failed: Factory reset.",
+            "safety": "230V relay. Qualified electrician. Zone valves: Manual override test monthly.",
+            "specs": "12 zones max. OpenTherm. WiFi 2.4GHz. iOS/Android app."
+        },
+        "Siemens RVL/RVP": {
+            "faults": "Fault code: Long press OK. Sensor open circuit. Actuator 0-10V check. Modbus timeout: Termination resistor 120Ω.",
+            "safety": "Mains powered. IP20 rating. Circuit breaker 6A Type B. Surge protection.",
+            "specs": "Weather comp. Cascade control 16 boilers. BACnet/Modbus. Touchscreen HMI."
+        },
+        "Tado Smart Thermostat": {
+            "faults": "E91: No power detected at relay. E92: Short circuit. E01: Calibration. Offline: Router 2.4GHz only.",
+            "safety": "Wireless installer. Relay 230V 5A. Wall mounting 1.5m height. CR2032 battery backup.",
+            "specs": "Geofencing. Multi-room. Heat pump compatible. Alexa/Google Home."
+        }
     }
 }
 
+# === LEGAL DISCLAIMER (CRITICAL FOR MVP) ===
+LEGAL_DISCLAIMER = """
+⚖️ **IMPORTANT LEGAL NOTICE - READ BEFORE USE**
+
+**This tool provides reference information only and does NOT constitute:**
+- Professional engineering advice or instruction
+- A substitute for qualified Gas Safe/OFTEC/F-Gas certification
+- Warranty or guarantee of diagnosis accuracy
+- Authorization to perform regulated gas/refrigerant work
+
+**User Responsibilities:**
+1. You MUST hold valid UK certifications (Gas Safe/OFTEC/F-Gas) for regulated work
+2. You accept full liability for all installation, repair, and safety decisions
+3. You will comply with Building Regulations Part L, Gas Safety Regulations 1998, and F-Gas Regulations 2015
+4. You acknowledge AI-generated content may contain errors
+
+**Liability Limitation:**
+The provider accepts NO liability for property damage, injury, death, regulatory breaches, or business losses arising from use of this tool. Use at your own risk.
+
+**Data Privacy:** Session data is not stored. No personal information is collected.
+
+BY CLICKING "I ACCEPT", YOU AGREE TO THESE TERMS.
+"""
+
+# === MAIN APPLICATION ===
 def main():
-    # --- MOBILE HEADER ---
+    # Header
     st.markdown("""
-        <div class="mobile-header">
-            <h2 style='margin:0; font-size: 20px;'>HVAC SENTINEL <span style="opacity:0.8">MOBILE</span></h2>
-            <div style='font-size: 12px; margin-top: 5px; opacity: 0.8;'>Site Compliance & Audit Tool</div>
+        <div class="app-header">
+            <div class="app-title">🔧 HVAC DocPro</div>
+            <div class="app-subtitle">UK Technical Documentation Assistant | AI-Powered Reference Tool</div>
         </div>
     """, unsafe_allow_html=True)
-
-    # --- 1. LOGIN SCREEN ---
-    if "authenticated" not in st.session_state:
-        st.session_state.authenticated = False
-
-    if not st.session_state.authenticated:
-        st.markdown('<div class="app-card">', unsafe_allow_html=True)
-        st.subheader("Engineer Login")
-        password = st.text_input("License Key", type="password", placeholder="Enter Key (Try: UK-PRO-2026)")
-        if st.button("Access Site Tool"):
-            if password == "UK-PRO-2026":
-                st.session_state.authenticated = True
+    
+    # === STEP 1: LEGAL ACCEPTANCE ===
+    if "legal_accepted" not in st.session_state:
+        st.session_state.legal_accepted = False
+    
+    if not st.session_state.legal_accepted:
+        st.markdown('<div class="legal-box">', unsafe_allow_html=True)
+        st.markdown(LEGAL_DISCLAIMER)
+        st.markdown('</div>', unsafe_allow_html=True)
+        
+        col1, col2, col3 = st.columns([1,2,1])
+        with col2:
+            if st.button("✅ I Accept - I Am Qualified"):
+                st.session_state.legal_accepted = True
+                st.rerun()
+        return
+    
+    # === STEP 2: PROFESSIONAL VERIFICATION ===
+    if "verified" not in st.session_state:
+        st.session_state.verified = False
+    
+    if not st.session_state.verified:
+        st.markdown('<div class="info-card">', unsafe_allow_html=True)
+        st.subheader("🔐 Professional Access")
+        st.caption("Verify your credentials to access technical documentation")
+        
+        col1, col2 = st.columns(2)
+        with col1:
+            reg_number = st.text_input("Gas Safe / OFTEC Reg #", placeholder="e.g., 123456")
+        with col2:
+            company = st.text_input("Company Name", placeholder="Your Business Ltd")
+        
+        access_code = st.text_input("Access Code", type="password", placeholder="Trial: HVAC2026")
+        
+        if st.button("🚀 Verify & Access"):
+            if access_code == "HVAC2026" and reg_number and company:
+                st.session_state.verified = True
+                st.session_state.engineer = reg_number
+                st.session_state.company = company
+                st.success("✅ Verification Successful")
                 st.rerun()
             else:
-                st.error("Invalid Key")
+                st.error("❌ Please complete all fields and use valid access code")
+        
         st.markdown('</div>', unsafe_allow_html=True)
+        st.info("💡 **Trial Access Code:** HVAC2026 | For full access, contact sales@hvac-docpro.uk")
         return
-
-    # --- 2. SAFETY DASHBOARD ---
-    st.markdown('<div class="app-card">', unsafe_allow_html=True)
-    with st.expander("🛡️ SITE SAFETY CHECK (Required)", expanded=True):
-        st.caption("Confirm pre-work safety checks:")
-        c1, c2 = st.columns(2)
-        with c1: v1 = st.checkbox("PPE OK")
-        with c2: v2 = st.checkbox("LOTO OK")
-        v3 = st.checkbox("Risk Assessment Complete")
     
-    if not (v1 and v2 and v3):
-        st.warning("⚠️ Complete checks to unlock tool")
+    # === STEP 3: SAFETY CHECKLIST ===
+    st.markdown('<div class="info-card">', unsafe_allow_html=True)
+    st.subheader("⚠️ Pre-Work Safety Verification")
+    st.caption("Complete before accessing diagnostic information")
+    
+    col1, col2, col3 = st.columns(3)
+    with col1:
+        ppe = st.checkbox("PPE Worn", help="Safety boots, gloves, glasses")
+    with col2:
+        loto = st.checkbox("Isolation Done", help="Gas/electrical isolation confirmed")
+    with col3:
+        risk = st.checkbox("Risk Assessed", help="Site hazards identified")
+    
+    st.markdown('</div>', unsafe_allow_html=True)
+    
+    if not (ppe and loto and risk):
+        st.warning("⚠️ Complete all safety checks to proceed")
         st.stop()
     else:
-        st.markdown('<span class="badge-safe">SITE SECURE</span>', unsafe_allow_html=True)
-    st.markdown('</div>', unsafe_allow_html=True)
-
-    # --- 3. DIAGNOSTIC INPUT ---
-    st.markdown('<div class="app-card">', unsafe_allow_html=True)
-    st.subheader("📍 Unit Identification")
+        st.markdown('<span class="badge badge-success">✓ SAFE TO WORK</span>', unsafe_allow_html=True)
     
-    tab1, tab2 = st.tabs(["Database Search", "Custom Unit"])
+    # === STEP 4: UNIT SELECTION ===
+    st.markdown("---")
+    st.subheader("📋 Equipment Documentation Lookup")
     
-    target_unit = ""
-    selected_context = ""
+    tab1, tab2 = st.tabs(["🔍 Database Search", "✍️ Manual Entry"])
+    
+    selected_unit = ""
+    context_data = {}
     
     with tab1:
-        brand = st.selectbox("Brand", ["Select..."] + list(KNOWLEDGE_BASE.keys()))
-        if brand != "Select...":
-            model = st.selectbox("Model", list(KNOWLEDGE_BASE[brand].keys()))
+        col1, col2 = st.columns(2)
+        with col1:
+            brand = st.selectbox(
+                "Manufacturer",
+                ["Select Brand..."] + sorted(HVAC_DATABASE.keys()),
+                help="Choose equipment manufacturer"
+            )
+        
+        if brand != "Select Brand...":
+            with col2:
+                model = st.selectbox(
+                    "Model / Series",
+                    list(HVAC_DATABASE[brand].keys()),
+                    help="Select specific model"
+                )
+            
             if model:
-                target_unit = f"{brand} {model}"
-                selected_context = KNOWLEDGE_BASE[brand][model]
-
-    with tab2:
-        custom_input = st.text_input("Manual Entry", placeholder="e.g., Remeha Quinta 45")
-        if custom_input:
-            target_unit = f"Custom: {custom_input}"
-            selected_context = "General UK HVAC Engineering Principles (Non-Verified Manual)"
-
-    st.markdown("---")
-    fault = st.text_input("Symptom / Error Code", placeholder="e.g., F.22 or Leaking Water")
+                selected_unit = f"{brand} {model}"
+                context_data = HVAC_DATABASE[brand][model]
+                
+                # Display unit info
+                st.markdown('<div class="info-card">', unsafe_allow_html=True)
+                st.markdown(f"**Selected:** {selected_unit}")
+                if "specs" in context_data:
+                    st.caption(f"📊 Specs: {context_data['specs']}")
+                if "safety" in context_data:
+                    st.warning(f"⚠️ Safety: {context_data['safety']}")
+                st.markdown('</div>', unsafe_allow_html=True)
     
-    if st.button("Analyze Fault"):
-        if not fault or not target_unit:
-            st.error("Please select a unit and enter a fault.")
-        else:
-            if not st.secrets.get("ANTHROPIC_API_KEY"):
-                st.error("API Key Missing")
-                return
-
+    with tab2:
+        custom_unit = st.text_area(
+            "Describe Equipment",
+            placeholder="e.g., Remeha Quinta 45kW commercial boiler, showing F.04 error",
+            height=100
+        )
+        if custom_unit:
+            selected_unit = f"Custom: {custom_unit}"
+            context_data = {"faults": "General UK HVAC principles - verification required on-site"}
+    
+    # === STEP 5: FAULT INPUT ===
+    st.markdown("---")
+    fault_input = st.text_area(
+        "🛠️ Fault Description / Error Code",
+        placeholder="Describe symptoms, error codes, unusual behavior...\ne.g., 'F.22 displayed, radiators cold, pressure gauge at 0.3 bar'",
+        height=100
+    )
+    
+    # === STEP 6: AI ANALYSIS ===
+    if st.button("🔍 Generate Technical Documentation", type="primary"):
+        if not selected_unit or not fault_input:
+            st.error("❌ Please select equipment and describe the fault")
+            return
+        
+        # API Key Check
+        if not st.secrets.get("ANTHROPIC_API_KEY"):
+            st.error("🔴 API Configuration Error - Contact Administrator")
+            return
+        
+        try:
             client = anthropic.Anthropic(api_key=st.secrets["ANTHROPIC_API_KEY"])
             
-            with st.spinner("Processing..."):
-                prompt = f"""
-                ACT AS: UK Senior HVAC Engineer.
-                UNIT: {target_unit}
-                CONTEXT: {selected_context}
-                FAULT: {fault}
-                
-                OUTPUT FORMAT (Mobile Friendly):
-                1. 🔍 DIAGNOSIS: One sentence.
-                2. 🛠️ ACTION: 5 numbered bullet points.
-                3. ⚠️ WARNING: One safety critical note.
-                """
-                
+            # Build context
+            context_text = ""
+            if context_data:
+                if "faults" in context_data:
+                    context_text += f"Known Faults: {context_data['faults']}\n"
+                if "safety" in context_data:
+                    context_text += f"Safety Data: {context_data['safety']}\n"
+                if "specs" in context_data:
+                    context_text += f"Specifications: {context_data['specs']}\n"
+            
+            # AI Prompt
+            prompt = f"""You are a UK Gas Safe registered senior HVAC engineer with 20+ years experience.
+
+EQUIPMENT: {selected_unit}
+CONTEXT DATA: {context_text if context_text else "Limited data - use general UK HVAC principles"}
+REPORTED FAULT: {fault_input}
+
+Provide a PROFESSIONAL TECHNICAL REFERENCE (not instructions) formatted as:
+
+🔍 DIAGNOSIS:
+[One-sentence likely cause]
+
+🛠️ TECHNICAL REFERENCE:
+[5-7 numbered investigation steps a qualified engineer would follow]
+
+⚠️ CRITICAL SAFETY NOTES:
+[Specific hazards for THIS equipment - gas, electrical, refrigerant, pressure]
+
+📋 COMPLIANCE REFERENCES:
+[Relevant UK regulations: Gas Safety (Installation & Use) Regs 1998, BS standards, F-Gas, Building Regs Part L]
+
+🔧 PARTS COMMONLY REQUIRED:
+[List 3-5 potential parts with typical part numbers if known]
+
+IMPORTANT: Frame as reference documentation, NOT as instructions. Assume reader is qualified."""
+
+            with st.spinner("🤖 Analyzing fault data..."):
                 response = client.messages.create(
-                    model="claude-3-5-sonnet-20240620",
-                    max_tokens=600,
+                    model="claude-sonnet-4-20250514",
+                    max_tokens=1500,
+                    temperature=0.3,
                     messages=[{"role": "user", "content": prompt}]
                 )
                 
-                st.session_state.result = response.content[0].text
-                st.session_state.unit_log = target_unit
-                st.rerun()
-    st.markdown('</div>', unsafe_allow_html=True)
+                result_text = response.content[0].text
+                
+                # Display Results
+                st.markdown('<div class="result-box">', unsafe_allow_html=True)
+                st.markdown(f"### 📄 Technical Documentation")
+                st.markdown(f"**Equipment:** {selected_unit}")
+                st.markdown(f"**Generated:** {datetime.now().strftime('%d/%m/%Y %H:%M')}")
+                st.markdown(f"**Engineer:** {st.session_state.engineer} | **Company:** {st.session_state.company}")
+                st.markdown("---")
+                st.markdown(result_text)
+                st.markdown('</div>', unsafe_allow_html=True)
+                
+                # Save to session
+                st.session_state.last_result = result_text
+                st.session_state.last_unit = selected_unit
+                
+                # === JOB LOG EXPORT ===
+                st.markdown("---")
+                st.subheader("💾 Job Documentation")
+                
+                col1, col2 = st.columns(2)
+                with col1:
+                    job_ref = st.text_input("Job Reference", placeholder="JOB-2026-001")
+                with col2:
+                    customer = st.text_input("Customer Name", placeholder="Site/Client")
+                
+                notes = st.text_area("Engineer Notes", placeholder="Additional observations...", height=80)
+                
+                if st.button("📥 Download Job Report"):
+                    report = f"""
+HVAC DOCPRO - TECHNICAL DOCUMENTATION REPORT
+{'='*60}
+Generated: {datetime.now().strftime('%d/%m/%Y %H:%M:%S')}
+Engineer: {st.session_state.engineer}
+Company: {st.session_state.company}
+Job Reference: {job_ref}
+Customer: {customer}
 
-    # --- 4. RESULT & AUDIT CARD ---
-    if "result" in st.session_state:
-        st.markdown('<div class="app-card" style="border-left: 5px solid #003366;">', unsafe_allow_html=True)
-        st.subheader("📋 Action Plan")
-        st.markdown(st.session_state.result)
-        st.markdown("---")
+EQUIPMENT: {selected_unit}
+REPORTED FAULT: {fault_input}
+
+{'='*60}
+TECHNICAL ANALYSIS:
+{'='*60}
+{result_text}
+
+{'='*60}
+ENGINEER NOTES:
+{notes if notes else 'None recorded'}
+
+{'='*60}
+LEGAL DISCLAIMER:
+This document is a reference tool only. All work must be performed 
+by qualified personnel in accordance with UK regulations. The engineer 
+accepts full responsibility for all work carried out.
+{'='*60}
+                    """
+                    
+                    st.download_button(
+                        label="💾 Download PDF Report",
+                        data=report,
+                        file_name=f"HVAC_Report_{job_ref}_{datetime.now().strftime('%Y%m%d')}.txt",
+                        mime="text/plain"
+                    )
+                    st.success("✅ Report ready for download")
         
-        # Quick Audit
-        st.caption("Job Completion")
-        col_eng, col_ref = st.columns(2)
-        with col_eng: eng = st.text_input("Engineer", placeholder="Initials")
-        with col_ref: ref = st.text_input("Job #", placeholder="1234")
-        
-        if st.button("💾 Save & Close Job"):
-            report = f"AUDIT: {st.session_state.unit_log} | Ref: {ref} | Eng: {eng} | Plan: {st.session_state.result}"
-            st.download_button("Download Log", report, file_name=f"Job_{ref}.txt")
-            st.success("Job Logged Locally")
-        st.markdown('</div>', unsafe_allow_html=True)
+        except Exception as e:
+            st.error(f"🔴 Error: {str(e)}")
+            st.info("Please check your API configuration and try again")
+    
+    # === FOOTER ===
+    st.markdown("---")
+    st.markdown("""
+        <div style='text-align: center; color: #718096; font-size: 12px; padding: 20px;'>
+            <b>HVAC DocPro v1.0</b> | AI-Powered Technical Reference Tool<br>
+            For support: support@hvac-docpro.uk | Not a substitute for professional training<br>
+            © 2026 All Rights Reserved | <span class='badge badge-info'>BETA</span>
+        </div>
+    """, unsafe_allow_html=True)
 
 if __name__ == "__main__":
     main()
