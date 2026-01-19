@@ -216,7 +216,13 @@ if st.button("Generate Documentation"):
         context = HVAC_DATABASE[brand][model]
         
         # Call AI
-        client = anthropic.Anthropic(api_key=st.secrets["ANTHROPIC_API_KEY"])
+
+        http_client = Client(proxies=None) 
+
+        client = anthropic.Anthropic(
+            api_key=st.secrets["ANTHROPIC_API_KEY",
+            http_client=http_client
+        )
         
         prompt = f"""You are a UK HVAC engineer with 15+ years experience.
 
