@@ -14,117 +14,81 @@ st.set_page_config(
 # === PROFESSIONAL UI STYLING ===
 st.markdown("""
 <style>
-    /* Corporate HVAC Theme - Clean & Professional */
+    /* Simple Clean Theme */
     .stApp { 
-        background-color: #f5f7fa;
+        background-color: #ffffff;
     }
     
-    /* Header */
+    /* Simple Header */
     .app-header {
-        background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 100%);
-        padding: 25px 20px;
-        margin: -60px -60px 30px -60px;
-        color: white;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+        background-color: #2c5282;
+        padding: 30px 20px;
+        margin: -70px -70px 40px -70px;
+        text-align: center;
     }
     .app-title {
-        font-size: 28px;
+        font-size: 32px;
         font-weight: 700;
-        color: white;
+        color: #ffffff;
         margin: 0;
-        letter-spacing: 0.5px;
     }
     .app-subtitle {
-        font-size: 13px;
-        color: #cbd5e1;
-        margin-top: 5px;
-        font-weight: 400;
+        font-size: 15px;
+        color: #ffffff;
+        opacity: 0.9;
+        margin-top: 8px;
     }
     
-    /* Buttons - Corporate Blue */
+    /* Simple Buttons */
     .stButton>button {
         width: 100%;
-        background-color: #1e40af;
+        background-color: #2c5282;
         color: white;
         border: none;
-        border-radius: 6px;
-        padding: 12px 24px;
+        border-radius: 8px;
+        padding: 14px 24px;
         font-weight: 600;
-        font-size: 15px;
-        transition: all 0.2s ease;
-        box-shadow: 0 1px 3px rgba(0,0,0,0.12);
+        font-size: 16px;
     }
     .stButton>button:hover {
-        background-color: #1e3a8a;
-        box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+        background-color: #1e3a5f;
     }
     
-    /* Info Cards */
+    /* Simple Cards */
     .info-card {
-        background: white;
-        border: 1px solid #e2e8f0;
-        border-left: 4px solid #1e40af;
-        padding: 20px;
-        border-radius: 6px;
-        margin: 15px 0;
-        box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+        background: #f8f9fa;
+        border: 2px solid #e9ecef;
+        padding: 25px;
+        border-radius: 8px;
+        margin: 20px 0;
     }
     
     /* Status Badges */
-    .badge {
-        display: inline-block;
-        padding: 5px 12px;
-        border-radius: 4px;
-        font-size: 11px;
-        font-weight: 700;
-        margin: 5px 5px 5px 0;
-        text-transform: uppercase;
-    }
-    .badge-success { background: #10b981; color: white; }
-    .badge-warning { background: #f59e0b; color: white; }
-    .badge-info { background: #3b82f6; color: white; }
-    
-    /* Legal Disclaimer Box */
-    .legal-box {
-        background: #fef2f2;
-        border: 2px solid #dc2626;
-        border-radius: 6px;
-        padding: 20px;
-        margin: 20px 0;
-        font-size: 13px;
-        color: #991b1b;
-        line-height: 1.6;
-    }
-    
-    /* Results Container */
-    .result-box {
-        background: white;
-        border-radius: 6px;
-        padding: 25px;
-        margin: 20px 0;
-        border: 1px solid #e2e8f0;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.08);
-    }
-    
-    /* Input Fields - Better Contrast */
-    .stTextInput>div>div>input,
-    .stTextArea>div>div>textarea,
-    .stSelectbox>div>div>select {
-        background-color: white;
-        border: 1.5px solid #cbd5e1;
-        color: #1e293b;
-        font-size: 14px;
-    }
-    
-    /* Section Headers */
-    h2, h3 {
-        color: #1e293b;
+    .badge-success { 
+        background-color: #28a745; 
+        color: white; 
+        padding: 8px 16px; 
+        border-radius: 6px; 
         font-weight: 600;
+        display: inline-block;
     }
     
-    /* Improve text readability */
-    p, li, label {
-        color: #334155;
+    /* Legal Box */
+    .legal-box {
+        background: #fff3cd;
+        border: 3px solid #ffc107;
+        border-radius: 8px;
+        padding: 25px;
+        margin: 25px 0;
+    }
+    
+    /* Results Box */
+    .result-box {
+        background: #f8f9fa;
+        border: 2px solid #dee2e6;
+        border-radius: 8px;
+        padding: 30px;
+        margin: 25px 0;
     }
     
     /* Hide Streamlit Branding */
@@ -308,26 +272,26 @@ HVAC_DATABASE = {
 
 # === LEGAL DISCLAIMER (CRITICAL FOR MVP) ===
 LEGAL_DISCLAIMER = """
-⚖️ **IMPORTANT LEGAL NOTICE - READ BEFORE USE**
+### ⚠️ IMPORTANT LEGAL NOTICE
 
-**This tool provides reference information only and does NOT constitute:**
-- Professional engineering advice or instruction
-- A substitute for qualified Gas Safe/OFTEC/F-Gas certification
-- Warranty or guarantee of diagnosis accuracy
-- Authorization to perform regulated gas/refrigerant work
+**This tool provides REFERENCE information only.**
 
-**User Responsibilities:**
-1. You MUST hold valid UK certifications (Gas Safe/OFTEC/F-Gas) for regulated work
-2. You accept full liability for all installation, repair, and safety decisions
-3. You will comply with Building Regulations Part L, Gas Safety Regulations 1998, and F-Gas Regulations 2015
-4. You acknowledge AI-generated content may contain errors
+**What this is NOT:**
+- Professional engineering advice
+- A replacement for Gas Safe/OFTEC certification
+- A guarantee of accuracy
+- Authorization to perform regulated work
 
-**Liability Limitation:**
-The provider accepts NO liability for property damage, injury, death, regulatory breaches, or business losses arising from use of this tool. Use at your own risk.
+**Your responsibilities:**
+- You MUST hold valid UK certifications for regulated gas/refrigerant work
+- You accept FULL liability for all work decisions
+- You will comply with UK Gas Safety Regulations, F-Gas Regulations, and Building Regulations
+- You understand AI content may contain errors
 
-**Data Privacy:** Session data is not stored. No personal information is collected.
+**Our liability:**
+We accept NO liability for property damage, injury, death, or regulatory breaches from using this tool.
 
-BY CLICKING "I ACCEPT", YOU AGREE TO THESE TERMS.
+**BY CLICKING ACCEPT, YOU AGREE TO THESE TERMS.**
 """
 
 # === MAIN APPLICATION ===
@@ -335,8 +299,8 @@ def main():
     # Header
     st.markdown("""
         <div class="app-header">
-            <div class="app-title">🔧 HVAC DocPro</div>
-            <div class="app-subtitle">Technical Documentation Assistant for UK Engineers</div>
+            <div class="app-title">HVAC Technical Documentation</div>
+            <div class="app-subtitle">AI-Powered Fault Reference System</div>
         </div>
     """, unsafe_allow_html=True)
     
@@ -349,11 +313,9 @@ def main():
         st.markdown(LEGAL_DISCLAIMER)
         st.markdown('</div>', unsafe_allow_html=True)
         
-        col1, col2, col3 = st.columns([1,2,1])
-        with col2:
-            if st.button("✅ I Accept - I Am Qualified"):
-                st.session_state.legal_accepted = True
-                st.rerun()
+        if st.button("✅ I Accept - I Am a Qualified Engineer"):
+            st.session_state.legal_accepted = True
+            st.rerun()
         return
     
     # === STEP 2: PROFESSIONAL VERIFICATION ===
@@ -362,52 +324,49 @@ def main():
     
     if not st.session_state.verified:
         st.markdown('<div class="info-card">', unsafe_allow_html=True)
-        st.subheader("🔐 Access HVAC DocPro")
+        st.subheader("Login")
         
-        company = st.text_input("Company / Business Name", placeholder="e.g., Smith Heating Ltd")
-        access_key = st.text_input("Access Key", type="password", placeholder="Enter your access key")
+        company = st.text_input("Your Company Name", placeholder="e.g., ABC Heating Services")
+        access_key = st.text_input("Access Key", type="password", placeholder="Enter key")
         
-        st.info("💡 **Free Trial Key:** `TRIAL2026` | For full license, contact: sales@hvac-docpro.uk")
+        st.info("🔑 **Free Trial Key:** `TRIAL2026`")
         
-        if st.button("🚀 Start Session"):
+        if st.button("Start Session"):
             if access_key in ["TRIAL2026", "HVAC2026"] and company:
                 st.session_state.verified = True
                 st.session_state.company = company
-                st.session_state.access_level = "Trial" if access_key == "TRIAL2026" else "Beta"
+                st.session_state.access_level = "Trial"
                 st.success("✅ Access Granted")
                 st.rerun()
             else:
-                st.error("❌ Please enter your company name and a valid access key")
+                st.error("Please enter company name and valid access key")
         
         st.markdown('</div>', unsafe_allow_html=True)
         return
     
     # === STEP 3: SAFETY CHECKLIST ===
-    st.markdown('<div class="info-card">', unsafe_allow_html=True)
-    st.subheader("⚠️ Pre-Work Safety Verification")
-    st.caption("Complete before accessing diagnostic information")
+    st.markdown("---")
+    st.subheader("⚠️ Safety Verification")
     
     col1, col2, col3 = st.columns(3)
     with col1:
-        ppe = st.checkbox("PPE Worn", help="Safety boots, gloves, glasses")
+        ppe = st.checkbox("PPE Worn")
     with col2:
-        loto = st.checkbox("Isolation Done", help="Gas/electrical isolation confirmed")
+        loto = st.checkbox("Isolation Complete")
     with col3:
-        risk = st.checkbox("Risk Assessed", help="Site hazards identified")
-    
-    st.markdown('</div>', unsafe_allow_html=True)
+        risk = st.checkbox("Risk Assessment Done")
     
     if not (ppe and loto and risk):
-        st.warning("⚠️ Complete all safety checks to proceed")
+        st.warning("Complete all safety checks to proceed")
         st.stop()
     else:
-        st.markdown('<span class="badge badge-success">✓ SAFE TO WORK</span>', unsafe_allow_html=True)
+        st.markdown('<span class="badge-success">✓ SAFE TO WORK</span>', unsafe_allow_html=True)
     
     # === STEP 4: UNIT SELECTION ===
     st.markdown("---")
-    st.subheader("📋 Equipment Documentation Lookup")
+    st.subheader("Equipment Selection")
     
-    tab1, tab2 = st.tabs(["🔍 Database Search", "✍️ Manual Entry"])
+    tab1, tab2 = st.tabs(["Database Search", "Manual Entry"])
     
     selected_unit = ""
     context_data = {}
@@ -415,60 +374,40 @@ def main():
     with tab1:
         col1, col2 = st.columns(2)
         with col1:
-            brand = st.selectbox(
-                "Manufacturer",
-                ["Select Brand..."] + sorted(HVAC_DATABASE.keys()),
-                help="Choose equipment manufacturer"
-            )
+            brand = st.selectbox("Manufacturer", ["Select..."] + sorted(HVAC_DATABASE.keys()))
         
-        if brand != "Select Brand...":
+        if brand != "Select...":
             with col2:
-                model = st.selectbox(
-                    "Model / Series",
-                    list(HVAC_DATABASE[brand].keys()),
-                    help="Select specific model"
-                )
+                model = st.selectbox("Model", list(HVAC_DATABASE[brand].keys()))
             
             if model:
                 selected_unit = f"{brand} {model}"
                 context_data = HVAC_DATABASE[brand][model]
                 
                 # Display unit info
-                st.markdown('<div class="info-card">', unsafe_allow_html=True)
-                st.markdown(f"**Selected:** {selected_unit}")
-                if "specs" in context_data:
-                    st.caption(f"📊 Specs: {context_data['specs']}")
+                st.info(f"**Selected:** {selected_unit}")
                 if "safety" in context_data:
-                    st.warning(f"⚠️ Safety: {context_data['safety']}")
-                st.markdown('</div>', unsafe_allow_html=True)
+                    st.warning(f"⚠️ {context_data['safety']}")
     
     with tab2:
-        custom_unit = st.text_area(
-            "Describe Equipment",
-            placeholder="e.g., Remeha Quinta 45kW commercial boiler, showing F.04 error",
-            height=100
-        )
+        custom_unit = st.text_area("Describe Equipment", placeholder="e.g., Remeha Quinta 45kW showing F.04 error", height=80)
         if custom_unit:
             selected_unit = f"Custom: {custom_unit}"
-            context_data = {"faults": "General UK HVAC principles - verification required on-site"}
+            context_data = {"faults": "General UK HVAC principles"}
     
     # === STEP 5: FAULT INPUT ===
     st.markdown("---")
-    fault_input = st.text_area(
-        "🛠️ Fault Description / Error Code",
-        placeholder="Describe symptoms, error codes, unusual behavior...\ne.g., 'F.22 displayed, radiators cold, pressure gauge at 0.3 bar'",
-        height=100
-    )
+    fault_input = st.text_area("Fault Description / Error Code", placeholder="e.g., F.22 displayed, radiators cold, pressure at 0.3 bar", height=100)
     
     # === STEP 6: AI ANALYSIS ===
-    if st.button("🔍 Generate Technical Documentation", type="primary"):
+    if st.button("Generate Technical Documentation"):
         if not selected_unit or not fault_input:
-            st.error("❌ Please select equipment and describe the fault")
+            st.error("Please select equipment and describe the fault")
             return
         
         # API Key Check
         if not st.secrets.get("ANTHROPIC_API_KEY"):
-            st.error("🔴 API Configuration Error - Contact Administrator")
+            st.error("API Configuration Error - Contact Support")
             return
         
         try:
@@ -485,32 +424,36 @@ def main():
                     context_text += f"Specifications: {context_data['specs']}\n"
             
             # AI Prompt
-            prompt = f"""You are a UK Gas Safe registered senior HVAC engineer with 20+ years experience.
+            prompt = f"""You are a UK Gas Safe registered HVAC engineer with 15+ years field experience.
 
 EQUIPMENT: {selected_unit}
-CONTEXT DATA: {context_text if context_text else "Limited data - use general UK HVAC principles"}
-REPORTED FAULT: {fault_input}
+TECHNICAL DATA: {context_text if context_text else "Limited data - use UK HVAC best practices"}
+FAULT REPORTED: {fault_input}
 
-Provide a PROFESSIONAL TECHNICAL REFERENCE (not instructions) formatted as:
+Provide a TECHNICAL REFERENCE in this format:
 
-🔍 DIAGNOSIS:
-[One-sentence likely cause]
+**LIKELY CAUSE:**
+[One clear sentence explaining what's probably wrong]
 
-🛠️ TECHNICAL REFERENCE:
-[5-7 numbered investigation steps a qualified engineer would follow]
+**INVESTIGATION STEPS:**
+1. [First check - most common cause]
+2. [Second check]
+3. [Third check]
+4. [Fourth check]
+5. [Fifth check - if needed]
 
-⚠️ CRITICAL SAFETY NOTES:
-[Specific hazards for THIS equipment - gas, electrical, refrigerant, pressure]
+**SAFETY WARNINGS:**
+- [Specific hazards for this equipment - gas, electrical, pressure, refrigerant]
 
-📋 COMPLIANCE REFERENCES:
-[Relevant UK regulations: Gas Safety (Installation & Use) Regs 1998, BS standards, F-Gas, Building Regs Part L]
+**PARTS LIKELY NEEDED:**
+- [List 2-4 common parts with part numbers if known]
 
-🔧 PARTS COMMONLY REQUIRED:
-[List 3-5 potential parts with typical part numbers if known]
+**UK COMPLIANCE:**
+[Relevant regulations: Gas Safety Regs, F-Gas, Building Regs Part L, BS standards]
 
-IMPORTANT: Frame as reference documentation, NOT as instructions. Assume reader is qualified."""
+Keep it practical and field-ready. This is a REFERENCE for a qualified engineer."""
 
-            with st.spinner("🤖 Analyzing fault data..."):
+            with st.spinner("Analyzing fault..."):
                 response = client.messages.create(
                     model="claude-sonnet-4-20250514",
                     max_tokens=1500,
@@ -522,10 +465,10 @@ IMPORTANT: Frame as reference documentation, NOT as instructions. Assume reader 
                 
                 # Display Results
                 st.markdown('<div class="result-box">', unsafe_allow_html=True)
-                st.markdown(f"### 📄 Technical Documentation")
+                st.markdown(f"### Technical Documentation")
                 st.markdown(f"**Equipment:** {selected_unit}")
-                st.markdown(f"**Generated:** {datetime.now().strftime('%d/%m/%Y %H:%M')}")
-                st.markdown(f"**Company:** {st.session_state.company} | **Access:** {st.session_state.access_level}")
+                st.markdown(f"**Date:** {datetime.now().strftime('%d/%m/%Y %H:%M')}")
+                st.markdown(f"**Company:** {st.session_state.company}")
                 st.markdown("---")
                 st.markdown(result_text)
                 st.markdown('</div>', unsafe_allow_html=True)
@@ -536,64 +479,58 @@ IMPORTANT: Frame as reference documentation, NOT as instructions. Assume reader 
                 
                 # === JOB LOG EXPORT ===
                 st.markdown("---")
-                st.subheader("💾 Job Documentation")
+                st.subheader("Export Job Report")
                 
                 col1, col2 = st.columns(2)
                 with col1:
-                    job_ref = st.text_input("Job Reference", placeholder="JOB-2026-001")
+                    job_ref = st.text_input("Job Reference", placeholder="JOB-001")
                 with col2:
-                    customer = st.text_input("Customer Name", placeholder="Site/Client")
+                    customer = st.text_input("Customer", placeholder="Client name")
                 
-                notes = st.text_area("Engineer Notes", placeholder="Additional observations...", height=80)
+                notes = st.text_area("Additional Notes", placeholder="Engineer observations...", height=60)
                 
-                if st.button("📥 Download Job Report"):
-                    report = f"""
-HVAC DOCPRO - TECHNICAL DOCUMENTATION REPORT
-{'='*60}
-Generated: {datetime.now().strftime('%d/%m/%Y %H:%M:%S')}
+                if st.button("Download Report"):
+                    report = f"""HVAC TECHNICAL DOCUMENTATION REPORT
+{'='*50}
+Date: {datetime.now().strftime('%d/%m/%Y %H:%M')}
 Company: {st.session_state.company}
-Access Level: {st.session_state.access_level}
-Job Reference: {job_ref}
+Job Ref: {job_ref}
 Customer: {customer}
 
 EQUIPMENT: {selected_unit}
-REPORTED FAULT: {fault_input}
+FAULT: {fault_input}
 
-{'='*60}
+{'='*50}
 TECHNICAL ANALYSIS:
-{'='*60}
+{'='*50}
 {result_text}
 
-{'='*60}
+{'='*50}
 ENGINEER NOTES:
-{notes if notes else 'None recorded'}
+{notes if notes else 'None'}
 
-{'='*60}
-LEGAL DISCLAIMER:
-This document is a reference tool only. All work must be performed 
-by qualified personnel in accordance with UK regulations. The engineer 
-accepts full responsibility for all work carried out.
-{'='*60}
+{'='*50}
+DISCLAIMER: Reference tool only. Engineer accepts 
+full responsibility for all work performed.
+{'='*50}
                     """
                     
                     st.download_button(
-                        label="💾 Download PDF Report",
+                        label="Download Report (.txt)",
                         data=report,
-                        file_name=f"HVAC_Report_{job_ref}_{datetime.now().strftime('%Y%m%d')}.txt",
+                        file_name=f"HVAC_{job_ref}_{datetime.now().strftime('%Y%m%d')}.txt",
                         mime="text/plain"
                     )
-                    st.success("✅ Report ready for download")
+                    st.success("Report ready")
         
         except Exception as e:
-            st.error(f"🔴 Error: {str(e)}")
-            st.info("Please check your API configuration and try again")
+            st.error(f"Error: {str(e)}")
     
     # === FOOTER ===
     st.markdown("---")
     st.markdown("""
-        <div style='text-align: center; color: #64748b; font-size: 12px; padding: 20px;'>
-            <b>HVAC DocPro</b> | AI-Powered Technical Reference | <span class='badge badge-info'>MVP Beta</span><br>
-            Not a substitute for professional training | © 2026
+        <div style='text-align: center; color: #6c757d; font-size: 13px; padding: 15px;'>
+            HVAC Technical Documentation | Reference Tool Only | Not a substitute for professional training
         </div>
     """, unsafe_allow_html=True)
 
