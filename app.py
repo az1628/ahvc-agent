@@ -7,6 +7,7 @@ from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib.units import inch
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer
 from reportlab.lib.enums import TA_CENTER
+import httpx
 
 # Page Config
 st.set_page_config(page_title="HVAC Documentation Tool", page_icon="🔧", layout="centered")
@@ -203,8 +204,17 @@ if st.button("Generate Documentation"):
         selected_unit = f"{brand} {model}"
         context = HVAC_DATABASE[brand][model]
         
+        # Create HTTP client without proxy
+        http_client = httpx.Client(
+            timeout=httpx.Timeout(60.0, connect=10.0),
+            follow_redirects=True
+        )
+        
         # Create Anthropic client
-        client = anthropic.Anthropic(api_key=st.secrets["ANTHROPIC_API_KEY"])
+        client = anthropic.Anthropic(
+            api_key=st.secrets["ANTHROPIC_API_KEY"],
+            http_client=http_client
+        )
         
         prompt = f"""You are a UK HVAC engineer with 15+ years experience.
 
