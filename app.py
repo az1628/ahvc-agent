@@ -2,57 +2,69 @@ import streamlit as st
 import anthropic
 from datetime import datetime
 
-# --- 1. PREMIUM BRANDING & UI ---
-st.set_page_config(page_title="HVAC Sentinel Pro | 2026 Audit", page_icon="🛡️", layout="wide")
+# --- 1. CORPORATE MOBILE CONFIG ---
+st.set_page_config(page_title="HVAC Sentinel Mobile", page_icon="📱", layout="centered")
 
+# MOBILE-FIRST CSS
 st.markdown("""
     <style>
-    .main { background-color: #f8f9fa; }
-    .stApp { max-width: 1200px; margin: 0 auto; }
-    .compliance-card { 
-        background-color: #ffffff; 
-        padding: 25px; 
-        border-radius: 12px; 
-        border-left: 8px solid #002d62; 
-        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    /* Global Clean Look */
+    .stApp { background-color: #f0f2f6; }
+    
+    /* Corporate Header */
+    .mobile-header {
+        background-color: #003366;
+        padding: 20px;
+        border-radius: 0px 0px 15px 15px;
+        color: white;
+        text-align: center;
+        margin-top: -50px; /* Pulls it to the top */
         margin-bottom: 20px;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
     }
-    .safety-banner { 
-        background: linear-gradient(90deg, #d32f2f 0%, #b71c1c 100%); 
-        color: white; 
-        padding: 15px; 
-        border-radius: 8px; 
-        text-align: center; 
-        font-weight: 700;
-        letter-spacing: 1px;
-    }
-    .brand-text { color: #002d62; font-family: 'Helvetica Neue', sans-serif; font-weight: 800; margin-bottom: 0px; }
-    .stButton>button { 
-        background-color: #002d62; 
-        color: white; 
-        border-radius: 6px; 
-        font-weight: bold; 
+    
+    /* Full Width 'Thumb-Friendly' Buttons */
+    .stButton>button {
+        width: 100%;
+        border-radius: 8px;
         height: 3.5em;
-        transition: 0.3s;
+        background-color: #003366; 
+        color: white;
+        font-weight: 600;
+        border: none;
     }
-    .stButton>button:hover { background-color: #004a99; border: 1px solid gold; }
+    .stButton>button:active { background-color: #002244; }
+    
+    /* Cards */
+    .app-card {
+        background: white;
+        padding: 20px;
+        border-radius: 12px;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        margin-bottom: 15px;
+        border: 1px solid #e0e0e0;
+    }
+    
+    /* Status Badges */
+    .badge-safe { background-color: #e8f5e9; color: #2e7d32; padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: bold; }
+    .badge-warn { background-color: #fff3e0; color: #ef6c00; padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: bold; }
+    
     </style>
     """, unsafe_allow_html=True)
 
-# --- 2. THE MASTER KNOWLEDGE BASE ---
-# Expanded to include Residential, Commercial, and Industrial units
+# --- 2. THE MASTER DATA (Same Robust Data) ---
 KNOWLEDGE_BASE = {
     "Vaillant": {
         "aroTHERM Plus (R290)": "F.022: Low water (<0.6 bar). F.718: Fan blocked. F.729: Compressor outlet <0C. R290 SAFETY: Flammable. 1m Boundary.",
-        "ecoTEC plus/pro": "F.22: Dry fire. F.28: Ignition fail. F.75: Pump sensor fault. F.29: Flame loss.",
+        "ecoTEC plus": "F.22: Dry fire. F.28: Ignition fail. F.75: Pump sensor fault. F.29: Flame loss.",
         "flexoTHERM": "701: Brine flow error. 702: Ground source sensor fault."
     },
     "Mitsubishi Electric": {
-        "Ecodan R290/R32": "U1: High pressure/flow. L9: Flow rate drop. P6: Overheat. F3: LP switch failure.",
-        "City Multi VRF": "4115: Discharge temp error. 1500: Refrigerant overcharge. 1102: Discharge temp thermistor."
+        "Ecodan R290": "U1: High pressure/flow. L9: Flow rate drop. P6: Overheat. F3: LP switch failure.",
+        "City Multi VRF": "4115: Discharge temp. 1500: Ref overcharge. 1102: Discharge temp thermistor."
     },
     "Worcester Bosch": {
-        "Greenstar 4000/8000": "EA: Ignition fault. E9: Overheat. C6: Fan speed. A1: Pump stuck. F7: False flame.",
+        "Greenstar 4000": "EA: Ignition fault. E9: Overheat. C6: Fan speed. A1: Pump stuck.",
         "GB162 Commercial": "227: Ignition fail. 216: Fan too slow. 224: Overheat >105C."
     },
     "Daikin": {
@@ -71,120 +83,135 @@ KNOWLEDGE_BASE = {
         "EHS Mono HT Quiet": "E911: Low flow. E101: Comms error. E912: Flow switch error."
     },
     "Viessmann": {
-        "Vitodens 100/200": "F2: Burner overheat. F4: No flame (Frozen condensate). F9: Fan speed low."
+        "Vitodens 100/200": "F2: Burner overheat. F4: No flame. F9: Fan speed low."
     },
-    "Commercial Fridge (Williams/Foster)": {
+    "Commercial Fridge": {
         "Williams Multideck": "HI: High Temp. CL: Clean Condenser. E1: Air probe fail. E16: HP Alarm.",
-        "Foster EcoShow": "hc: Condenser high temp. hP: High Pressure. dEF: Defrost active."
-    },
-    "Commercial Fridge (Adande/True)": {
-        "Adande Drawers": "rPF: Probe fail. HA: High temp. do: Door open. safety cycle active.",
-        "True GDM/T-Series": "P1: Probe fail. HA: Max temp. do: Door open. Short cycle: Dirty condenser."
+        "Foster EcoShow": "hc: High Condenser. hP: High Pressure. dEF: Defrost active.",
+        "Adande Drawers": "rPF: Probe fail. HA: High temp. do: Door open."
     }
 }
 
 def main():
-    # --- HEADER ---
-    st.markdown('<h1 class="brand-text">HVAC SENTINEL <span style="color:#004a99">PRO</span></h1>', unsafe_allow_html=True)
-    st.caption("v2.4 | UK Technical Compliance & Real-Time Audit Engine")
+    # --- MOBILE HEADER ---
+    st.markdown("""
+        <div class="mobile-header">
+            <h2 style='margin:0; font-size: 20px;'>HVAC SENTINEL <span style="opacity:0.8">MOBILE</span></h2>
+            <div style='font-size: 12px; margin-top: 5px; opacity: 0.8;'>Site Compliance & Audit Tool</div>
+        </div>
+    """, unsafe_allow_html=True)
 
-    # --- SIDEBAR / LICENSE GATE ---
-    st.sidebar.markdown("### 🔐 Secure Login")
-    access_code = st.sidebar.text_input("Consultancy License Key", type="password")
-    if access_code != "UK-PRO-2026":
-        st.sidebar.warning("Restricted Access. License Required.")
+    # --- 1. LOGIN SCREEN ---
+    if "authenticated" not in st.session_state:
+        st.session_state.authenticated = False
+
+    if not st.session_state.authenticated:
+        st.markdown('<div class="app-card">', unsafe_allow_html=True)
+        st.subheader("Engineer Login")
+        password = st.text_input("License Key", type="password", placeholder="Enter Key (Try: UK-PRO-2026)")
+        if st.button("Access Site Tool"):
+            if password == "UK-PRO-2026":
+                st.session_state.authenticated = True
+                st.rerun()
+            else:
+                st.error("Invalid Key")
+        st.markdown('</div>', unsafe_allow_html=True)
         return
 
-    st.sidebar.success("✅ License: SME Premium")
-    
-    # --- SAFETY INTERLOCK ---
-    st.markdown('<div class="safety-banner">⚠️ MANDATORY 2026 SAFETY PROTOCOL ACTIVE</div>', unsafe_allow_html=True)
-    
-    with st.container():
-        st.markdown('<div class="compliance-card">', unsafe_allow_html=True)
-        st.subheader("Step 1: Compliance Check")
-        c1, c2, c3 = st.columns(3)
-        with c1: v1 = st.checkbox("PPE: Gloves & Eye Pro")
-        with c2: v2 = st.checkbox("Safe Isolation (LOTO)")
-        with c3: v3 = st.checkbox("F-Gas Logbook / Gas Safe Record Opened")
-        st.markdown('</div>', unsafe_allow_html=True)
-
-    if not (v1 and v2 and v3):
-        st.stop()
-
-    # --- DIAGNOSTIC ENGINE ---
-    st.markdown('<div class="compliance-card">', unsafe_allow_html=True)
-    st.subheader("Step 2: Unit Selection")
-    
-    mode = st.radio("Unit Selection Mode:", ["Search Database", "Enter Custom Model"], horizontal=True)
-    
-    selected_context = ""
-    target_unit = ""
-
-    if mode == "Search Database":
-        d1, d2 = st.columns(2)
-        with d1:
-            brand = st.selectbox("Manufacturer", ["Select..."] + list(KNOWLEDGE_BASE.keys()))
-        with d2:
-            if brand != "Select...":
-                model = st.selectbox("Model Series", list(KNOWLEDGE_BASE[brand].keys()))
-                selected_context = KNOWLEDGE_BASE[brand][model]
-                target_unit = f"{brand} {model}"
-            else:
-                st.selectbox("Model Series", ["Select Brand First..."], disabled=True)
-    else:
+    # --- 2. SAFETY DASHBOARD ---
+    st.markdown('<div class="app-card">', unsafe_allow_html=True)
+    with st.expander("🛡️ SITE SAFETY CHECK (Required)", expanded=True):
+        st.caption("Confirm pre-work safety checks:")
         c1, c2 = st.columns(2)
-        with c1: custom_brand = st.text_input("Enter Brand (e.g., Ariston)")
-        with c2: custom_model = st.text_input("Enter Model (e.g., Clas One)")
-        target_unit = f"CUSTOM: {custom_brand} {custom_model}"
-        selected_context = "No verified manual in local DB. Use general engineering principles for this specific manufacturer."
-
-    fault = st.text_input("Fault / Error Code (e.g. 'F.28' or 'Loud vibrating noise')")
+        with c1: v1 = st.checkbox("PPE OK")
+        with c2: v2 = st.checkbox("LOTO OK")
+        v3 = st.checkbox("Risk Assessment Complete")
+    
+    if not (v1 and v2 and v3):
+        st.warning("⚠️ Complete checks to unlock tool")
+        st.stop()
+    else:
+        st.markdown('<span class="badge-safe">SITE SECURE</span>', unsafe_allow_html=True)
     st.markdown('</div>', unsafe_allow_html=True)
 
-    if st.button("🚀 GENERATE COMPLIANCE-VERIFIED SOP"):
-        if not st.secrets.get("ANTHROPIC_API_KEY"):
-            st.error("API Key missing in Secrets.")
-            return
+    # --- 3. DIAGNOSTIC INPUT ---
+    st.markdown('<div class="app-card">', unsafe_allow_html=True)
+    st.subheader("📍 Unit Identification")
+    
+    tab1, tab2 = st.tabs(["Database Search", "Custom Unit"])
+    
+    target_unit = ""
+    selected_context = ""
+    
+    with tab1:
+        brand = st.selectbox("Brand", ["Select..."] + list(KNOWLEDGE_BASE.keys()))
+        if brand != "Select...":
+            model = st.selectbox("Model", list(KNOWLEDGE_BASE[brand].keys()))
+            if model:
+                target_unit = f"{brand} {model}"
+                selected_context = KNOWLEDGE_BASE[brand][model]
 
-        client = anthropic.Anthropic(api_key=st.secrets["ANTHROPIC_API_KEY"])
+    with tab2:
+        custom_input = st.text_input("Manual Entry", placeholder="e.g., Remeha Quinta 45")
+        if custom_input:
+            target_unit = f"Custom: {custom_input}"
+            selected_context = "General UK HVAC Engineering Principles (Non-Verified Manual)"
+
+    st.markdown("---")
+    fault = st.text_input("Symptom / Error Code", placeholder="e.g., F.22 or Leaking Water")
+    
+    if st.button("Analyze Fault"):
+        if not fault or not target_unit:
+            st.error("Please select a unit and enter a fault.")
+        else:
+            if not st.secrets.get("ANTHROPIC_API_KEY"):
+                st.error("API Key Missing")
+                return
+
+            client = anthropic.Anthropic(api_key=st.secrets["ANTHROPIC_API_KEY"])
+            
+            with st.spinner("Processing..."):
+                prompt = f"""
+                ACT AS: UK Senior HVAC Engineer.
+                UNIT: {target_unit}
+                CONTEXT: {selected_context}
+                FAULT: {fault}
+                
+                OUTPUT FORMAT (Mobile Friendly):
+                1. 🔍 DIAGNOSIS: One sentence.
+                2. 🛠️ ACTION: 5 numbered bullet points.
+                3. ⚠️ WARNING: One safety critical note.
+                """
+                
+                response = client.messages.create(
+                    model="claude-3-5-sonnet-20240620",
+                    max_tokens=600,
+                    messages=[{"role": "user", "content": prompt}]
+                )
+                
+                st.session_state.result = response.content[0].text
+                st.session_state.unit_log = target_unit
+                st.rerun()
+    st.markdown('</div>', unsafe_allow_html=True)
+
+    # --- 4. RESULT & AUDIT CARD ---
+    if "result" in st.session_state:
+        st.markdown('<div class="app-card" style="border-left: 5px solid #003366;">', unsafe_allow_html=True)
+        st.subheader("📋 Action Plan")
+        st.markdown(st.session_state.result)
+        st.markdown("---")
         
-        with st.spinner("Analyzing Technical Data..."):
-            prompt = f"""
-            Role: Lead UK HVAC/Gas Safe Auditor. 
-            Unit: {target_unit}
-            Verified Context: {selected_context}
-            User Issue: {fault}
-            
-            Structure:
-            1. DIAGNOSIS: Explain what is likely happening.
-            2. SOP: 5 step repair guide for a qualified engineer.
-            3. SAFETY: Crucial hazards (Gas/Electrical/Refrigerant).
-            4. VERIFICATION: How to test the fix.
-            """
-            
-            response = client.messages.create(
-                model="claude-3-5-sonnet-20240620",
-                max_tokens=1000,
-                messages=[{"role": "user", "content": prompt}]
-            )
-            
-            st.markdown("### 📋 Automated Field Guidance")
-            st.success(response.content[0].text)
-            
-            # --- AUDIT LOG ---
-            st.markdown('<div class="compliance-card">', unsafe_allow_html=True)
-            st.subheader("Step 3: Close Job & Audit")
-            eng_name = st.text_input("Engineer Name")
-            job_ref = st.text_input("Job Reference Number")
-            
-            if st.button("📁 GENERATE OFFICIAL AUDIT LOG"):
-                report = f"AUDIT LOG: {target_unit}\nRef: {job_ref}\nEng: {eng_name}\nPlan: {response.content[0].text}"
-                st.download_button("Download Compliance Report", report, file_name=f"Audit_{job_ref}.txt")
-            st.markdown('</div>', unsafe_allow_html=True)
-
-    st.divider()
-    st.markdown("<p style='text-align: center; color: #666;'>&copy; 2026 HVAC Sentinel | Licensed for Certified Professionals Only</p>", unsafe_allow_html=True)
+        # Quick Audit
+        st.caption("Job Completion")
+        col_eng, col_ref = st.columns(2)
+        with col_eng: eng = st.text_input("Engineer", placeholder="Initials")
+        with col_ref: ref = st.text_input("Job #", placeholder="1234")
+        
+        if st.button("💾 Save & Close Job"):
+            report = f"AUDIT: {st.session_state.unit_log} | Ref: {ref} | Eng: {eng} | Plan: {st.session_state.result}"
+            st.download_button("Download Log", report, file_name=f"Job_{ref}.txt")
+            st.success("Job Logged Locally")
+        st.markdown('</div>', unsafe_allow_html=True)
 
 if __name__ == "__main__":
     main()
