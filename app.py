@@ -14,103 +14,123 @@ st.set_page_config(
 # === PROFESSIONAL UI STYLING ===
 st.markdown("""
 <style>
-    /* Clean Professional Theme */
+    /* Corporate HVAC Theme - Clean & Professional */
     .stApp { 
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        background-color: #f5f7fa;
     }
     
-    /* Main Container */
-    .main-container {
-        background: white;
-        border-radius: 20px;
-        padding: 30px;
-        margin: 20px auto;
-        max-width: 800px;
-        box-shadow: 0 20px 60px rgba(0,0,0,0.3);
-    }
-    
-    /* Header Branding */
+    /* Header */
     .app-header {
-        text-align: center;
-        padding: 20px 0;
-        border-bottom: 3px solid #667eea;
-        margin-bottom: 30px;
+        background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 100%);
+        padding: 25px 20px;
+        margin: -60px -60px 30px -60px;
+        color: white;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.15);
     }
     .app-title {
-        font-size: 32px;
-        font-weight: 800;
-        color: #2d3748;
+        font-size: 28px;
+        font-weight: 700;
+        color: white;
         margin: 0;
+        letter-spacing: 0.5px;
     }
     .app-subtitle {
-        font-size: 14px;
-        color: #718096;
+        font-size: 13px;
+        color: #cbd5e1;
         margin-top: 5px;
+        font-weight: 400;
     }
     
-    /* Premium Buttons */
+    /* Buttons - Corporate Blue */
     .stButton>button {
         width: 100%;
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        background-color: #1e40af;
         color: white;
         border: none;
-        border-radius: 10px;
-        padding: 15px 30px;
+        border-radius: 6px;
+        padding: 12px 24px;
         font-weight: 600;
-        font-size: 16px;
-        transition: all 0.3s ease;
-        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        font-size: 15px;
+        transition: all 0.2s ease;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.12);
     }
     .stButton>button:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+        background-color: #1e3a8a;
+        box-shadow: 0 4px 8px rgba(0,0,0,0.15);
     }
     
     /* Info Cards */
     .info-card {
-        background: #f7fafc;
-        border-left: 4px solid #667eea;
-        padding: 15px;
-        border-radius: 8px;
+        background: white;
+        border: 1px solid #e2e8f0;
+        border-left: 4px solid #1e40af;
+        padding: 20px;
+        border-radius: 6px;
         margin: 15px 0;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.08);
     }
     
     /* Status Badges */
     .badge {
         display: inline-block;
-        padding: 6px 12px;
-        border-radius: 20px;
-        font-size: 12px;
+        padding: 5px 12px;
+        border-radius: 4px;
+        font-size: 11px;
         font-weight: 700;
-        margin: 5px;
+        margin: 5px 5px 5px 0;
+        text-transform: uppercase;
     }
-    .badge-success { background: #c6f6d5; color: #22543d; }
-    .badge-warning { background: #feebc8; color: #7c2d12; }
-    .badge-info { background: #bee3f8; color: #2c5282; }
+    .badge-success { background: #10b981; color: white; }
+    .badge-warning { background: #f59e0b; color: white; }
+    .badge-info { background: #3b82f6; color: white; }
     
     /* Legal Disclaimer Box */
     .legal-box {
-        background: #fff5f5;
-        border: 2px solid #fc8181;
-        border-radius: 10px;
+        background: #fef2f2;
+        border: 2px solid #dc2626;
+        border-radius: 6px;
         padding: 20px;
         margin: 20px 0;
-        font-size: 12px;
-        color: #742a2a;
+        font-size: 13px;
+        color: #991b1b;
+        line-height: 1.6;
     }
     
     /* Results Container */
     .result-box {
-        background: #edf2f7;
-        border-radius: 12px;
+        background: white;
+        border-radius: 6px;
         padding: 25px;
         margin: 20px 0;
-        border: 2px solid #667eea;
+        border: 1px solid #e2e8f0;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+    }
+    
+    /* Input Fields - Better Contrast */
+    .stTextInput>div>div>input,
+    .stTextArea>div>div>textarea,
+    .stSelectbox>div>div>select {
+        background-color: white;
+        border: 1.5px solid #cbd5e1;
+        color: #1e293b;
+        font-size: 14px;
+    }
+    
+    /* Section Headers */
+    h2, h3 {
+        color: #1e293b;
+        font-weight: 600;
+    }
+    
+    /* Improve text readability */
+    p, li, label {
+        color: #334155;
     }
     
     /* Hide Streamlit Branding */
     #MainMenu {visibility: hidden;}
     footer {visibility: hidden;}
+    header {visibility: hidden;}
     
 </style>
 """, unsafe_allow_html=True)
@@ -316,7 +336,7 @@ def main():
     st.markdown("""
         <div class="app-header">
             <div class="app-title">🔧 HVAC DocPro</div>
-            <div class="app-subtitle">UK Technical Documentation Assistant | AI-Powered Reference Tool</div>
+            <div class="app-subtitle">Technical Documentation Assistant for UK Engineers</div>
         </div>
     """, unsafe_allow_html=True)
     
@@ -342,29 +362,24 @@ def main():
     
     if not st.session_state.verified:
         st.markdown('<div class="info-card">', unsafe_allow_html=True)
-        st.subheader("🔐 Professional Access")
-        st.caption("Verify your credentials to access technical documentation")
+        st.subheader("🔐 Access HVAC DocPro")
         
-        col1, col2 = st.columns(2)
-        with col1:
-            reg_number = st.text_input("Gas Safe / OFTEC Reg #", placeholder="e.g., 123456")
-        with col2:
-            company = st.text_input("Company Name", placeholder="Your Business Ltd")
+        company = st.text_input("Company / Business Name", placeholder="e.g., Smith Heating Ltd")
+        access_key = st.text_input("Access Key", type="password", placeholder="Enter your access key")
         
-        access_code = st.text_input("Access Code", type="password", placeholder="Trial: HVAC2026")
+        st.info("💡 **Free Trial Key:** `TRIAL2026` | For full license, contact: sales@hvac-docpro.uk")
         
-        if st.button("🚀 Verify & Access"):
-            if access_code == "HVAC2026" and reg_number and company:
+        if st.button("🚀 Start Session"):
+            if access_key in ["TRIAL2026", "HVAC2026"] and company:
                 st.session_state.verified = True
-                st.session_state.engineer = reg_number
                 st.session_state.company = company
-                st.success("✅ Verification Successful")
+                st.session_state.access_level = "Trial" if access_key == "TRIAL2026" else "Beta"
+                st.success("✅ Access Granted")
                 st.rerun()
             else:
-                st.error("❌ Please complete all fields and use valid access code")
+                st.error("❌ Please enter your company name and a valid access key")
         
         st.markdown('</div>', unsafe_allow_html=True)
-        st.info("💡 **Trial Access Code:** HVAC2026 | For full access, contact sales@hvac-docpro.uk")
         return
     
     # === STEP 3: SAFETY CHECKLIST ===
@@ -510,7 +525,7 @@ IMPORTANT: Frame as reference documentation, NOT as instructions. Assume reader 
                 st.markdown(f"### 📄 Technical Documentation")
                 st.markdown(f"**Equipment:** {selected_unit}")
                 st.markdown(f"**Generated:** {datetime.now().strftime('%d/%m/%Y %H:%M')}")
-                st.markdown(f"**Engineer:** {st.session_state.engineer} | **Company:** {st.session_state.company}")
+                st.markdown(f"**Company:** {st.session_state.company} | **Access:** {st.session_state.access_level}")
                 st.markdown("---")
                 st.markdown(result_text)
                 st.markdown('</div>', unsafe_allow_html=True)
@@ -536,8 +551,8 @@ IMPORTANT: Frame as reference documentation, NOT as instructions. Assume reader 
 HVAC DOCPRO - TECHNICAL DOCUMENTATION REPORT
 {'='*60}
 Generated: {datetime.now().strftime('%d/%m/%Y %H:%M:%S')}
-Engineer: {st.session_state.engineer}
 Company: {st.session_state.company}
+Access Level: {st.session_state.access_level}
 Job Reference: {job_ref}
 Customer: {customer}
 
@@ -576,10 +591,9 @@ accepts full responsibility for all work carried out.
     # === FOOTER ===
     st.markdown("---")
     st.markdown("""
-        <div style='text-align: center; color: #718096; font-size: 12px; padding: 20px;'>
-            <b>HVAC DocPro v1.0</b> | AI-Powered Technical Reference Tool<br>
-            For support: support@hvac-docpro.uk | Not a substitute for professional training<br>
-            © 2026 All Rights Reserved | <span class='badge badge-info'>BETA</span>
+        <div style='text-align: center; color: #64748b; font-size: 12px; padding: 20px;'>
+            <b>HVAC DocPro</b> | AI-Powered Technical Reference | <span class='badge badge-info'>MVP Beta</span><br>
+            Not a substitute for professional training | © 2026
         </div>
     """, unsafe_allow_html=True)
 
