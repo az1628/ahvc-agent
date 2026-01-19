@@ -322,7 +322,7 @@ full responsibility for work performed.
                 
                 # Disclaimer
                 disclaimer_style = ParagraphStyle('Disclaimer', parent=styles['BodyText'], fontSize=9, alignment=TA_CENTER)
-                story.append(Paragraph("DISCLAIMER: Reference tool only. Engineer accepts full responsibility for work performed.", disclaimer_style))
+                story.append(Paragraph("DISCLAIMER: Reference tool only.", disclaimer_style))
                 
                 doc.build(story)
                 buffer.seek(0)
