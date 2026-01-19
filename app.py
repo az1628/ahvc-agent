@@ -220,7 +220,7 @@ if st.button("Generate Documentation"):
         http_client = Client(proxies=None) 
 
         client = anthropic.Anthropic(
-            api_key=st.secrets["ANTHROPIC_API_KEY",
+            api_key=st.secrets["ANTHROPIC_API_KEY"],
             http_client=http_client
         )
         
