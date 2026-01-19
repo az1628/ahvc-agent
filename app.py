@@ -5,27 +5,24 @@ from io import BytesIO
 from reportlab.lib.pagesizes import A4
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib.units import inch
-from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, PageBreak
-from reportlab.lib.enums import TA_CENTER, TA_LEFT
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer
+from reportlab.lib.enums import TA_CENTER
 
 # Page Config
 st.set_page_config(page_title="HVAC Documentation Tool", page_icon="🔧", layout="centered")
 
-# Simple CSS
+# Dark Mode CSS
 st.markdown("""
 <style>
-    /* DARK MODE - Easy to read */
     .stApp {
         background-color: #1a1a1a;
         color: #ffffff;
     }
     
-    /* All text WHITE */
     *, p, span, div, label, h1, h2, h3 {
         color: #ffffff !important;
     }
     
-    /* Header */
     .header {
         background-color: #2b5797;
         padding: 30px;
@@ -38,7 +35,6 @@ st.markdown("""
         font-size: 32px;
     }
     
-    /* Simple button */
     .stButton>button {
         background-color: #2b5797;
         color: #ffffff !important;
@@ -50,7 +46,6 @@ st.markdown("""
         font-weight: 600;
     }
     
-    /* Result box */
     .result {
         background-color: #2a2a2a;
         padding: 30px;
@@ -60,20 +55,17 @@ st.markdown("""
         color: #ffffff !important;
     }
     
-    /* Input fields - dark with white text */
     input, textarea, select {
         background-color: #2a2a2a !important;
         color: #ffffff !important;
         border: 1px solid #555 !important;
     }
     
-    /* Streamlit specific overrides */
     .stTextInput input, .stTextArea textarea, .stSelectbox select {
         background-color: #2a2a2a !important;
         color: #ffffff !important;
     }
     
-    /* Hide streamlit branding */
     #MainMenu {visibility: hidden;}
     footer {visibility: hidden;}
     header {visibility: hidden;}
@@ -133,17 +125,13 @@ HVAC_DATABASE = {
 # Initialize session state
 if "authenticated" not in st.session_state:
     st.session_state.authenticated = False
-
-# Initialize session state
-if "authenticated" not in st.session_state:
-    st.session_state.authenticated = False
 if "legal_accepted" not in st.session_state:
     st.session_state.legal_accepted = False
 
 # Header
 st.markdown('<div class="header"><h1>HVAC Documentation Tool</h1></div>', unsafe_allow_html=True)
 
-# Legal Disclaimer (shown first)
+# Legal Disclaimer
 if not st.session_state.legal_accepted:
     st.markdown("### ⚠️ Legal Notice")
     st.warning("""
@@ -164,7 +152,7 @@ if not st.session_state.legal_accepted:
         st.rerun()
     st.stop()
 
-# Step 1: Trial Key
+# Login
 if not st.session_state.authenticated:
     st.markdown("### Login")
     
@@ -182,7 +170,7 @@ if not st.session_state.authenticated:
             st.error("Invalid trial key or missing company name")
     st.stop()
 
-# Step 2: Equipment Selection
+# Equipment Selection
 st.markdown(f"**Company:** {st.session_state.company}")
 st.markdown("---")
 st.markdown("### Select Equipment")
@@ -197,32 +185,26 @@ if brand != "Select...":
 else:
     model = None
 
-# Step 3: Fault Input
+# Fault Input
 st.markdown("### Describe the Fault")
 fault = st.text_area("Fault Description / Error Code", 
                      placeholder="e.g., F.22 error showing, radiators cold, pressure at 0.3 bar",
                      height=100)
 
-# Step 4: Generate
+# Generate Documentation
 if st.button("Generate Documentation"):
     if not model or not fault:
         st.error("Please select a model and describe the fault")
     else:
         if not st.secrets.get("ANTHROPIC_API_KEY"):
-            st.error("API key not configured")
+            st.error("API key not configured. Add ANTHROPIC_API_KEY to Streamlit secrets.")
             st.stop()
         
         selected_unit = f"{brand} {model}"
         context = HVAC_DATABASE[brand][model]
         
-        # Call AI
-
-        http_client = Client(proxies=None) 
-
-        client = anthropic.Anthropic(
-            api_key=st.secrets["ANTHROPIC_API_KEY"],
-            http_client=http_client
-        )
+        # Create Anthropic client
+        client = anthropic.Anthropic(api_key=st.secrets["ANTHROPIC_API_KEY"])
         
         prompt = f"""You are a UK HVAC engineer with 15+ years experience.
 
@@ -273,7 +255,7 @@ Keep it practical and field-ready."""
             st.markdown(result)
             st.markdown('</div>', unsafe_allow_html=True)
             
-            # Download
+            # Download section
             st.markdown("### Download Report")
             job_ref = st.text_input("Job Reference (optional)", placeholder="JOB-001")
             
@@ -302,8 +284,8 @@ full responsibility for work performed.
                 doc = SimpleDocTemplate(buffer, pagesize=A4, rightMargin=72, leftMargin=72, topMargin=72, bottomMargin=72)
                 
                 styles = getSampleStyleSheet()
-                title_style = ParagraphStyle('CustomTitle', parent=styles['Heading1'], fontSize=18, textColor='#2b5797', spaceAfter=30, alignment=TA_CENTER)
-                heading_style = ParagraphStyle('CustomHeading', parent=styles['Heading2'], fontSize=14, textColor='#2b5797', spaceAfter=12, spaceBefore=12)
+                title_style = ParagraphStyle('CustomTitle', parent=styles['Heading1'], fontSize=18, spaceAfter=30, alignment=TA_CENTER)
+                heading_style = ParagraphStyle('CustomHeading', parent=styles['Heading2'], fontSize=14, spaceAfter=12, spaceBefore=12)
                 normal_style = styles['BodyText']
                 
                 story = []
@@ -323,16 +305,13 @@ full responsibility for work performed.
                 # Content
                 for line in content.split('\n'):
                     if line.strip():
-                        if line.strip().endswith(':') and line.strip().isupper():
-                            story.append(Paragraph(line, heading_style))
-                        else:
-                            story.append(Paragraph(line.replace('\n', '<br/>'), normal_style))
-                            story.append(Spacer(1, 0.1*inch))
+                        story.append(Paragraph(line.replace('\n', '<br/>'), normal_style))
+                        story.append(Spacer(1, 0.1*inch))
                 
                 story.append(Spacer(1, 0.5*inch))
                 
                 # Disclaimer
-                disclaimer_style = ParagraphStyle('Disclaimer', parent=styles['BodyText'], fontSize=9, textColor='#666666', alignment=TA_CENTER)
+                disclaimer_style = ParagraphStyle('Disclaimer', parent=styles['BodyText'], fontSize=9, alignment=TA_CENTER)
                 story.append(Paragraph("DISCLAIMER: Reference tool only. Engineer accepts full responsibility for work performed.", disclaimer_style))
                 
                 doc.build(story)
