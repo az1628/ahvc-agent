@@ -114,7 +114,7 @@ def main():
                 try:
                     # UPDATED MODEL STRING AND ERROR HANDLING
                     response = client.messages.create(
-                        model="claude-3-5-sonnet-latest", # Changed to 'latest' alias
+                        model="claude-sonnet-4-20250514", # Changed to 'latest' alias
                         max_tokens=800,
                         messages=[{"role": "user", "content": f"Expert HVAC Engineer advice for {selected_unit}. Fault: {fault_desc}"}]
                     )
