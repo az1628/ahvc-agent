@@ -10,7 +10,7 @@ from reportlab.lib.enums import TA_CENTER
 import httpx
 
 # Page Config
-st.set_page_config(page_title="HVAC Field-Spec Pro", page_icon="🔧", layout="centered")
+st.set_page_config(page_title="HVAC Documentation Tool", page_icon="🔧", layout="centered")
 
 # Dark Mode CSS
 st.markdown("""
@@ -20,7 +20,27 @@ st.markdown("""
         color: #ffffff;
     }
     
-    *, p, span, div, label, h1, h2, h3 {
+    /* Main text white */
+    h1, h2, h3, .stMarkdown {
+        color: #ffffff !important;
+    }
+    
+    /* Input labels WHITE */
+    label {
+        color: #ffffff !important;
+        font-weight: 500 !important;
+    }
+    
+    /* Warning/Info boxes - DARK TEXT on light background */
+    .stAlert > div {
+        color: #000000 !important;
+    }
+    .stAlert p, .stAlert li {
+        color: #000000 !important;
+    }
+    
+    /* Error messages - WHITE text */
+    .stException, .stError {
         color: #ffffff !important;
     }
     
@@ -56,14 +76,25 @@ st.markdown("""
         color: #ffffff !important;
     }
     
+    /* Input fields - DARK with WHITE text */
     input, textarea, select {
         background-color: #2a2a2a !important;
         color: #ffffff !important;
         border: 1px solid #555 !important;
     }
     
+    /* Placeholder text */
+    input::placeholder, textarea::placeholder {
+        color: #888 !important;
+    }
+    
     .stTextInput input, .stTextArea textarea, .stSelectbox select {
         background-color: #2a2a2a !important;
+        color: #ffffff !important;
+    }
+    
+    /* Make sure markdown text is visible */
+    .result * {
         color: #ffffff !important;
     }
     
@@ -157,7 +188,7 @@ if not st.session_state.legal_accepted:
 if not st.session_state.authenticated:
     st.markdown("### Login")
     
-    company = st.text_input("Company Name", placeholder="Your company name")
+    company = st.text_input("Company Name", placeholder="e.g., Smith Heating Ltd or John Smith")
     trial_key = st.text_input("Trial Key", type="password", placeholder="Enter trial key")
     
     st.info("**Free Trial Key:** TRIAL2026")
@@ -322,7 +353,7 @@ full responsibility for work performed.
                 
                 # Disclaimer
                 disclaimer_style = ParagraphStyle('Disclaimer', parent=styles['BodyText'], fontSize=9, alignment=TA_CENTER)
-                story.append(Paragraph("DISCLAIMER: Reference tool only.", disclaimer_style))
+                story.append(Paragraph("DISCLAIMER: Reference tool only. Engineer accepts full responsibility for work performed.", disclaimer_style))
                 
                 doc.build(story)
                 buffer.seek(0)
