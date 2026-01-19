@@ -67,6 +67,20 @@ st.markdown("""
         font-weight: 600;
     }
     
+    /* Download buttons specifically */
+    .stDownloadButton>button {
+        background-color: #2b5797 !important;
+        color: #ffffff !important;
+    }
+    
+    .stDownloadButton>button>div {
+        color: #ffffff !important;
+    }
+    
+    .stDownloadButton>button p {
+        color: #ffffff !important;
+    }
+    
     .result {
         background-color: #2a2a2a;
         padding: 30px;
