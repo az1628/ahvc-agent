@@ -8,6 +8,7 @@ from reportlab.lib.units import inch
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer
 from reportlab.lib.enums import TA_CENTER
 import httpx
+import base64
 
 # Page Config
 st.set_page_config(page_title="HVAC Documentation Tool", page_icon="🔧", layout="centered")
@@ -237,6 +238,13 @@ fault = st.text_area("Fault Description / Error Code",
                      placeholder="e.g., F.22 error showing, radiators cold, pressure at 0.3 bar",
                      height=100)
 
+# Image Upload
+st.markdown("### Upload Image (Optional)")
+uploaded_image = st.file_uploader("Upload photo of equipment/fault", type=["jpg", "jpeg", "png"], help="Optional: Upload a photo to help with diagnosis")
+
+if uploaded_image:
+    st.image(uploaded_image, caption="Uploaded Image", use_container_width=True)
+
 # Generate Documentation
 if st.button("Generate Documentation"):
     if not model or not fault:
@@ -261,7 +269,11 @@ if st.button("Generate Documentation"):
             http_client=http_client
         )
         
-        prompt = f"""You are a UK HVAC engineer with 15+ years experience.
+        # Prepare prompt with optional image
+        prompt_parts = [
+            {
+                "type": "text",
+                "text": f"""You are a UK HVAC engineer with 15+ years experience.
 
 EQUIPMENT: {selected_unit}
 KNOWN FAULTS: {context}
@@ -289,13 +301,33 @@ UK COMPLIANCE:
 [Relevant regulations]
 
 Keep it practical and field-ready."""
+            }
+        ]
+        
+        # Add image if uploaded
+        if uploaded_image:
+            image_data = base64.b64encode(uploaded_image.read()).decode('utf-8')
+            uploaded_image.seek(0)  # Reset file pointer
+            
+            prompt_parts.insert(0, {
+                "type": "image",
+                "source": {
+                    "type": "base64",
+                    "media_type": f"image/{uploaded_image.type.split('/')[-1]}",
+                    "data": image_data
+                }
+            })
+            prompt_parts.append({
+                "type": "text",
+                "text": "Based on the uploaded image and the fault description, provide your analysis."
+            })
 
         with st.spinner("Generating documentation..."):
             response = client.messages.create(
                 model="claude-sonnet-4-20250514",
                 max_tokens=1200,
                 temperature=0.3,
-                messages=[{"role": "user", "content": prompt}]
+                messages=[{"role": "user", "content": prompt_parts}]
             )
             
             result = response.content[0].text
@@ -306,6 +338,8 @@ Keep it practical and field-ready."""
             st.markdown(f"**Equipment:** {selected_unit}")
             st.markdown(f"**Date:** {datetime.now().strftime('%d/%m/%Y %H:%M')}")
             st.markdown(f"**Company:** {st.session_state.company}")
+            if uploaded_image:
+                st.markdown("**Image:** Included in analysis")
             st.markdown("---")
             st.markdown(result)
             st.markdown('</div>', unsafe_allow_html=True)
@@ -323,6 +357,7 @@ Job Reference: {job_ref if job_ref else 'N/A'}
 
 Equipment: {selected_unit}
 Fault: {fault}
+Image Attached: {'Yes' if uploaded_image else 'No'}
 
 {'='*50}
 {result}
@@ -355,6 +390,7 @@ full responsibility for work performed.
                 story.append(Paragraph(f"<b>Job Reference:</b> {job_ref if job_ref else 'N/A'}", normal_style))
                 story.append(Paragraph(f"<b>Equipment:</b> {equipment}", normal_style))
                 story.append(Paragraph(f"<b>Fault:</b> {fault}", normal_style))
+                story.append(Paragraph(f"<b>Image Attached:</b> {'Yes' if uploaded_image else 'No'}", normal_style))
                 story.append(Spacer(1, 0.3*inch))
                 
                 # Content
