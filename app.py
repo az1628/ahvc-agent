@@ -243,7 +243,7 @@ st.markdown("### Upload Image (Optional)")
 uploaded_image = st.file_uploader("Upload photo of equipment/fault", type=["jpg", "jpeg", "png"], help="Optional: Upload a photo to help with diagnosis")
 
 if uploaded_image:
-    st.image(uploaded_image, caption="Uploaded Image", use_container_width=True)
+    st.image(uploaded_image, caption="Uploaded Image", width=400)
 
 # Generate Documentation
 if st.button("Generate Documentation"):
